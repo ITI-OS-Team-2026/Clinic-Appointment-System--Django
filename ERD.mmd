@@ -1,0 +1,98 @@
+erDiagram
+    USER {
+        int id PK
+        varchar first_name
+        varchar last_name
+        varchar password
+        varchar email
+        varchar role
+        datetime created_at
+    }
+
+    DOCTOR_PROFILE {
+        int id PK
+        int user_id FK "One-to-One"
+        text bio
+        int experience_years
+        varchar contact_number
+        varchar location
+        varchar specialization
+        varchar license_number
+    }
+
+    PATIENT_PROFILE {
+        int id PK
+        int user_id FK "One-to-One"
+        date date_of_birth
+        varchar blood_type
+        varchar gender
+        text address
+        varchar contact_number
+    }
+
+    DOCTOR_SCHEDULE {
+        int id PK
+        int doctor_id FK "User ID"
+        int day_of_week
+        time start_time
+        time end_time
+        int session_duration_mins
+        int buffer_duration_mins "Default 5"
+    }
+
+    SCHEDULE_EXCEPTION {
+        int id PK
+        int doctor_id FK
+        date exception_date
+        boolean is_day_off
+        time start_time
+        time end_time
+    }
+
+    APPOINTMENT {
+        int id PK
+        int patient_id FK "User ID"
+        int doctor_id FK "User ID"
+        date appointment_date
+        time start_time
+        time end_time
+        varchar status "REQUESTED/CONFIRMED/etc"
+        datetime check_in_time
+    }
+
+    AUDIT_TRAIL {
+        int id PK
+        int appointment_id FK
+        int changed_by_id FK "User ID"
+        datetime old_datetime
+        datetime new_datetime
+        text reason
+        datetime created_at
+    }
+
+    CONSULTATION_RECORD {
+        int id PK
+        int appointment_id FK "One-to-One"
+        text diagnosis
+        text notes
+        text requested_tests
+    }
+
+    PRESCRIPTION_ITEM {
+        int id PK
+        int consultation_id FK
+        varchar drug_name
+        varchar dose
+        varchar duration
+    }
+
+    USER ||--o| DOCTOR_PROFILE : "profile"
+    USER ||--o| PATIENT_PROFILE : "profile"
+    USER ||--o{ DOCTOR_SCHEDULE : "defines"
+    USER ||--o{ SCHEDULE_EXCEPTION : "exceptions"
+    USER ||--o{ APPOINTMENT : "patient_of"
+    USER ||--o{ APPOINTMENT : "doctor_of"
+    USER ||--o{ AUDIT_TRAIL : "changed_by"
+    APPOINTMENT ||--o{ AUDIT_TRAIL : "history"
+    APPOINTMENT ||--o| CONSULTATION_RECORD : "results"
+    CONSULTATION_RECORD ||--o{ PRESCRIPTION_ITEM : "contains"
