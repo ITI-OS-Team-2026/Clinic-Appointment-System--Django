@@ -9,3 +9,6 @@ db.sqlite3
 .idea/
 .DS_Store
 Thumbs.db
+node_modules/
+npm-debug.log
+theme/static/css/dist/styles.css
