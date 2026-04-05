@@ -8,3 +8,92 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+
+/* Enable class-based dark mode (Translates: darkMode: "class") */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /* --- FONTS --- */
+    --font-headline: "Manrope", sans-serif;
+    --font-body: "Inter", sans-serif;
+    --font-label: "Inter", sans-serif;
+
+    /* --- BORDER RADIUS --- */
+    --radius: 0.125rem;       /* Overrides the default 'rounded' */
+    --radius-lg: 0.25rem;     /* Overrides 'rounded-lg' */
+    --radius-xl: 0.5rem;      /* Overrides 'rounded-xl' */
+    --radius-full: 0.75rem;   /* Overrides 'rounded-full' */
+
+    /* --- COLORS --- */
+    --color-tertiary-fixed-dim: #4fdbc8;
+    --color-on-tertiary: #ffffff;
+    --color-outline: #6f787d;
+    --color-surface-container: #eceef0;
+    --color-on-tertiary-container: #92ffed;
+    --color-surface-container-lowest: #ffffff;
+    --color-secondary-container: #d0e1fb;
+    --color-background: #f7f9fb;
+    --color-on-error: #ffffff;
+    --color-primary-container: #007490;
+    --color-on-primary: #ffffff;
+    --color-tertiary: #005d53;
+    --color-on-secondary-fixed: #0b1c30;
+    --color-surface-variant: #e0e3e5;
+    --color-tertiary-fixed: #71f8e4;
+    --color-surface-container-low: #f2f4f6;
+    --color-on-primary-container: #d2f1ff;
+    --color-primary: #005a70;
+    --color-secondary-fixed: #d3e4fe;
+    --color-on-secondary: #ffffff;
+    --color-surface: #f7f9fb;
+    --color-on-primary-fixed: #001f28;
+    --color-on-surface-variant: #3f484c;
+    --color-error-container: #ffdad6;
+    --color-inverse-surface: #2d3133;
+    --color-on-tertiary-fixed-variant: #005048;
+    --color-secondary-fixed-dim: #b7c8e1;
+    --color-on-tertiary-fixed: #00201c;
+    --color-inverse-primary: #6cd3f7;
+    --color-surface-container-high: #e6e8ea;
+    --color-on-primary-fixed-variant: #004e61;
+    --color-surface-dim: #d8dadc;
+    --color-primary-fixed-dim: #6cd3f7;
+    --color-secondary: #505f76;
+    --color-surface-bright: #f7f9fb;
+    --color-primary-fixed: #b7eaff;
+    --color-outline-variant: #bec8cd;
+    --color-surface-container-highest: #e0e3e5;
+    --color-on-surface: #191c1e;
+    --color-on-background: #191c1e;
+    --color-error: #ba1a1a;
+    --color-on-secondary-container: #54647a;
+    --color-surface-tint: #006780;
+    --color-tertiary-container: #00786c;
+    --color-on-error-container: #93000a;
+    --color-on-secondary-fixed-variant: #38485d;
+    --color-inverse-on-surface: #eff1f3;
+}
+
+/* --- CUSTOM BASE STYLES --- */
+@layer base {
+    body {
+        font-family: var(--font-body);
+        background-color: var(--color-background);
+        color: var(--color-on-background);
+    }
+}
+
+/* --- CUSTOM UTILITIES --- */
+/* This translates your custom <style> classes into Tailwind v4 utilities */
+@utility primary-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+}
+
+@utility ethereal-blur {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.7);
+}
+
+@utility material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
