@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+#User model inherits everything from AbstractUser
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('ADMIN', 'Admin'),
@@ -19,10 +20,10 @@ class DoctorProfile(models.Model):
     specialization = models.CharField(max_length=100)
     license_number = models.CharField(max_length=50, unique=True)
 
-class PatientProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
-    date_of_birth = models.DateField()
-    blood_type = models.CharField(max_length=5)
-    gender = models.CharField(max_length=20)
-    address = models.TextField()
-    contact_number = models.CharField(max_length=20)
+# class PatientProfile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
+#     date_of_birth = models.DateField()
+#     blood_type = models.CharField(max_length=5)
+#     gender = models.CharField(max_length=20)
+#     address = models.TextField()
+#     contact_number = models.CharField(max_length=20)
