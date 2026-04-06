@@ -1,6 +1,39 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from users.models import User, PatientProfile
+
+def patient_register(request):
+    if request.user.is_authenticated:
+        return redirect_based_on_role(request)
+
+    if request.method == 'POST':
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        e = request.POST.get('email')
+        
+        dob = request.POST.get('date_of_birth')
+        blood = request.POST.get('blood_type')
+        gender = request.POST.get('gender')
+        address = request.POST.get('address')
+        phone = request.POST.get('contact_number')
+
+        user = User.objects.create_user(username=u, email=e, password=p, role='PATIENT')
+        
+        PatientProfile.objects.create(
+            user=user, 
+            date_of_birth=dob, 
+            blood_type=blood, 
+            gender=gender, 
+            address=address, 
+            contact_number=phone
+        )
+        
+        login(request, user)
+        return redirect_based_on_role(request)
+
+    return render(request, 'register.html')
+
 
 def login_view(request):
     
