@@ -72,3 +72,6 @@ def redirect_based_on_role(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+def forget_password(request):
+    return render(request, 'auth/forget_password.html')
