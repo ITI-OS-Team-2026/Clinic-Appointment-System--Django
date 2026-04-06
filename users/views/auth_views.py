@@ -32,14 +32,14 @@ def patient_register(request):
         login(request, user)
         return redirect_based_on_role(request)
 
-    return render(request, 'register.html')
+    return render(request, 'auth/register.html')
 
 
 def login_view(request):
     
     # If they are already logged in, don't let them see the login page
     if request.user.is_authenticated:
-        return redirect_based_on_role(request.user)
+        return redirect_based_on_role(request)
     
     if request.method == 'POST':
         username = request.POST['username']
@@ -48,12 +48,14 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            return redirect_based_on_role(user)
+            return redirect_based_on_role(request)
         else:
             messages.error(request, 'Invalid username or password.')
     return render(request, 'auth/login.html')
 
-def redirect_based_on_role(user):
+def redirect_based_on_role(request):
+    
+    user = request.user
     if user.role == 'PATIENT':
         return redirect('patient_dashboard')
     elif user.role == 'DOCTOR':
@@ -63,7 +65,7 @@ def redirect_based_on_role(user):
     elif user.role == 'ADMIN':
         return redirect('admin_dashboard')
     else:
-        logout(user)
+        logout(request)
         return redirect('login')
     
 
