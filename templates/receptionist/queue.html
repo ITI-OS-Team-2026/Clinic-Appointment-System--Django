@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receptionist Queue</title>
+</head>
+<body>
+
+    <h1>Today's Queue — {{ today }}</h1>
+    <a href="/users/logout/">Logout</a>
+
+    <hr>
+
+    {% if appointments %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.start_time }}</td>
+                <td>{{ appt.patient.get_full_name }}</td>
+                <td>Dr. {{ appt.doctor.get_full_name }}</td>
+                <td>{{ appt.status }}</td>
+                <td>
+                    {% if appt.status == 'CONFIRMED' %}
+                        <form method="POST" action="/records/receptionist/checkin/{{ appt.id }}/">
+                            {% csrf_token %}
+                            <button type="submit">Check In</button>
+                        </form>
+                    {% else %}
+                        Checked In ✓
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    {% else %}
+        <p>No appointments for today.</p>
+    {% endif %}
+
+</body>
+</html>
