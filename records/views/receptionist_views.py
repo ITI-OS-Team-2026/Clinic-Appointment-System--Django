@@ -20,15 +20,4 @@ def receptionist_queue(request):
         'today': today,
         'now': now,
     })
-
-
-@user_passes_test(is_receptionist, login_url='/users/login/')
-def check_in_patient(request, appointment_id):
-    appt = get_object_or_404(Appointment, id=appointment_id)
-
-    if request.method == 'POST':
-        appt.status = 'CHECKED_IN'
-        appt.check_in_time = timezone.now()
-        appt.save()
-
-    return redirect('receptionist_queue')
+
