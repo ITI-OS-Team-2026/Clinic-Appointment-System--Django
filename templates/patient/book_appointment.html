@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Book Appointment | The Clinical Sanctuary</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#001f28",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#71f8e4",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "outline-variant": "#bec8cd",
+                        "on-tertiary-fixed": "#00201c",
+                        "tertiary": "#005d53",
+                        "primary-fixed": "#b7eaff",
+                        "primary": "#005a70",
+                        "tertiary-fixed-dim": "#4fdbc8",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-fixed-variant": "#005048",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#006780",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-fixed-dim": "#6cd3f7",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-primary-container": "#d2f1ff",
+                        "on-surface": "#191c1e",
+                        "error": "#ba1a1a",
+                        "primary-container": "#007490",
+                        "surface-bright": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "background": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "inverse-primary": "#6cd3f7",
+                        "on-primary-fixed-variant": "#004e61",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#54647a",
+                        "secondary": "#505f76",
+                        "outline": "#6f787d",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#3f484c",
+                        "tertiary-container": "#00786c",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-variant": "#e0e3e5",
+                        "secondary-container": "#d0e1fb",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-container": "#92ffed"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.5rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+
+        .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .doctor-card.selected {
+            border: 2px solid #005a70;
+            background-color: rgba(183, 234, 255, 0.2);
+        }
+
+        .time-slot.selected {
+            background-color: #005a70;
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.selected {
+            background-color: #005a70;
+            color: white;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface">
+    <div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+        <!-- Header -->
+        <div class="layout-container flex h-full grow flex-col">
+            <header
+                class="flex items-center justify-between px-6 py-4 md:px-10 border-b border-outline-variant/10 bg-surface-container-low">
+                <div class="flex items-center gap-4">
+                    <a href="/appointments/patient/dashboard/"
+                        class="flex items-center justify-center p-2 rounded-lg hover:bg-surface-container-highest transition-colors">
+                        <span class="material-symbols-outlined text-primary">arrow_back</span>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-headline font-bold text-on-surface leading-tight">Book Appointment</h1>
+                        <p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">New Consultation
+                            Flow</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="user-greeting" class="text-sm font-medium text-surface-variant">Hello, {{
+                        request.user.username }}</span>
+                    <a href="/users/logout/" class="text-xs text-error font-bold">Logout</a>
+                </div>
+            </header>
+
+            <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-8 md:px-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Form Side -->
+                    <div class="lg:col-span-8 flex flex-col gap-8">
+                        <!-- 1. Select Doctor -->
+                        <section
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+                                    <span
+                                        class="text-primary text-sm bg-primary-fixed w-6 h-6 rounded-full flex items-center justify-center">1</span>
+                                    Choose Your Specialist
+                                </h2>
+                            </div>
+                            <div id="doctors-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Doctors injected via JS -->
+                                <p class="text-sm text-on-surface-variant">Loading specialists...</p>
+                            </div>
+                        </section>
+
+                        <!-- 2. Select Date & Time -->
+                        <section id="datetime-section"
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm opacity-50 pointer-events-none transition-opacity">
+                            <h2 class="text-lg font-headline font-bold text-on-surface flex items-center gap-2 mb-6">
+                                <span
+                                    class="text-primary text-sm bg-primary-fixed w-6 h-6 rounded-full flex items-center justify-center">2</span>
+                                Date &amp; Time
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Mini Calendar Component -->
+                                <div class="bg-surface rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span id="calendar-header"
+                                            class="font-headline font-bold text-on-surface">-</span>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-2 text-center" id="calendar-days">
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Sun</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Mon</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Tue</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Wed</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Thu</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Fri</div>
+                                        <div
+                                            class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">
+                                            Sat</div>
+                                        <!-- Days injected here -->
+                                    </div>
+                                </div>
+
+                                <!-- Time Slot Picker -->
+                                <div>
+                                    <p
+                                        class="text-sm font-label text-on-surface-variant mb-4 uppercase tracking-widest">
+                                        Available Slots</p>
+                                    <div id="time-slots" class="grid grid-cols-2 gap-3">
+                                        <p class="text-sm text-outline-variant col-span-2">Please select a date first.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Summary Sidebar -->
+                    <div class="lg:col-span-4">
+                        <div
+                            class="sticky top-8 bg-surface-container-high rounded-xl p-6 border border-outline-variant/20">
+                            <h3 class="text-lg font-headline font-bold text-on-surface mb-6">Booking Summary</h3>
+
+                            <div class="space-y-4" id="booking-summary-details">
+                                <div class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-primary">person</span>
+                                    <div>
+                                        <p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">
+                                            Specialist</p>
+                                        <p id="summary-doc" class="text-sm font-bold text-on-surface">-</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-primary">calendar_month</span>
+                                    <div>
+                                        <p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">
+                                            Date &amp; Time</p>
+                                        <p id="summary-datetime" class="text-sm font-bold text-on-surface">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Cost placeholder -->
+                                <div class="pt-4 border-t border-outline-variant/20">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm text-on-surface-variant">Consultation Fee</span>
+                                        <span class="text-sm font-bold text-on-surface">Standard</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 space-y-3">
+                                <button id="btn-confirm" disabled
+                                    class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+                                    Confirm Appointment
+                                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                </button>
+                                <p class="text-[10px] text-center text-on-surface-variant leading-relaxed px-4">
+                                    By clicking confirm, you agree to our cancellation policy.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            doctor: null,
+            doctorName: null,
+            date: null,
+            startTime: null,
+            availableSlots: [] // Array of all fetched slots
+        };
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+
+        fetch('/appointments/api/doctors/')
+            .then(res => res.json())
+            .then(doctors => {
+                const container = document.getElementById('doctors-container');
+                container.innerHTML = '';
+
+                if (doctors.length === 0) {
+                    container.innerHTML = '<p class="text-sm">No doctors found.</p>';
+                    return;
+                }
+
+                doctors.forEach(doc => {
+                    const dummyImg = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.full_name) + '&background=b7eaff&color=005a70';
+                    const el = document.createElement('div');
+                    el.className = 'doctor-card p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-highest transition-colors flex gap-4 cursor-pointer border-2 border-transparent';
+                    el.innerHTML = `
+                    <div class="w-16 h-16 rounded-full bg-cover bg-center shrink-0" style="background-image: url('${dummyImg}')"></div>
+                    <div class="flex flex-col flex-1">
+                        <span class="text-on-surface font-headline font-bold">${doc.full_name}</span>
+                        <span class="text-sm text-on-surface-variant font-medium">${doc.specialization} • ${doc.experience_years} y/o exp</span>
+                    </div>
+                    <div class="check-mark hidden absolute top-4 right-4">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    </div>
+                `;
+                    el.onclick = () => selectDoctor(doc.id, doc.full_name, el);
+                    container.appendChild(el);
+                });
+            });
+
+        function selectDoctor(id, name, el) {
+            state.doctor = id;
+            state.doctorName = name;
+            state.date = null;
+            state.startTime = null;
+
+            document.querySelectorAll('.doctor-card').forEach(n => {
+                n.classList.remove('selected', 'border-primary', 'bg-primary-fixed/20');
+                n.querySelector('.check-mark').classList.add('hidden');
+                n.classList.add('border-transparent');
+            });
+
+            el.classList.add('selected', 'border-primary', 'bg-primary-fixed/20');
+            el.classList.remove('border-transparent');
+            el.querySelector('.check-mark').classList.remove('hidden');
+
+            document.getElementById('datetime-section').classList.remove('opacity-50', 'pointer-events-none');
+            document.getElementById('time-slots').innerHTML = '<p class="text-sm text-outline-variant col-span-2">Please select a date first.</p>';
+            updateSummary();
+
+            fetch(`/api/doctors/${id}/slots/`)
+                .then(res => {
+                    // console.log(res);
+                    return res.json();
+                })
+                .then(slots => {
+                    state.availableSlots = slots; // structure: {date: "YYYY-MM-DD", start_time: "HH:MM:SS"}
+                    renderCalendar();
+                });
+        }
+
+        // Very basic calendar render logic (just rendering the current month dynamically)
+        function renderCalendar() {
+            const calDays = document.getElementById('calendar-days');
+
+            // Keep header tags
+            const headersHtml = `
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Sun</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Mon</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Tue</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Wed</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Thu</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Fri</div>
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-tighter">Sat</div>
+        `;
+
+            let daysHtml = '';
+
+            const today = new Date();
+            document.getElementById('calendar-header').innerText = today.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+
+            // Pushing empties
+            for (let i = 0; i < firstDay; i++) { daysHtml += `<div></div>`; }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                // Check if there are available slots for this day
+                // Construct string "YYYY-MM-DD"
+                const ds = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+                const hasSlots = state.availableSlots.some(s => s.date === ds);
+
+                if (hasSlots) {
+                    daysHtml += `<div class="p-2 text-sm text-primary font-bold hover:bg-primary-fixed/30 rounded cursor-pointer transition-colors" onclick="selectDate('${ds}', this)">${d}</div>`;
+                } else {
+                    daysHtml += `<div class="p-2 text-sm text-outline-variant opacity-50">${d}</div>`;
+                }
+            }
+
+            calDays.innerHTML = headersHtml + daysHtml;
+        }
+
+        function selectDate(isoDate, el) {
+            state.date = isoDate;
+            state.startTime = null;
+
+            document.querySelectorAll('#calendar-days > div.cursor-pointer').forEach(n => {
+                n.classList.remove('selected', 'bg-primary', 'text-on-primary');
+                n.classList.add('text-primary');
+            });
+
+            el.classList.add('selected', 'bg-primary', 'text-on-primary');
+            el.classList.remove('text-primary');
+
+            updateSummary();
+            renderTimeSlots();
+        }
+
+        function renderTimeSlots() {
+            const slotsContainer = document.getElementById('time-slots');
+            slotsContainer.innerHTML = '';
+
+            const slotsForDate = state.availableSlots.filter(s => s.date === state.date);
+
+            if (slotsForDate.length === 0) {
+                slotsContainer.innerHTML = '<p class="text-sm text-outline-variant col-span-2">No slots available for this date.</p>';
+                return;
+            }
+
+            slotsForDate.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.className = 'time-slot py-2 px-3 border border-outline-variant/30 rounded-lg text-sm font-medium text-on-surface hover:border-primary transition-all';
+                btn.innerText = slot.start_time; // Basic string formatting
+                btn.onclick = () => selectTime(slot.start_time, btn);
+                slotsContainer.appendChild(btn);
+            });
+        }
+
+        function selectTime(timeStr, el) {
+            state.startTime = timeStr;
+
+            document.querySelectorAll('.time-slot').forEach(n => n.classList.remove('selected', 'bg-primary', 'text-on-primary'));
+            el.classList.add('selected', 'bg-primary', 'text-on-primary');
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-doc').innerText = state.doctorName || '-';
+            if (state.date && state.startTime) {
+                document.getElementById('summary-datetime').innerText = state.date + " at " + state.startTime;
+
+                const confirmBtn = document.getElementById('btn-confirm');
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                confirmBtn.onclick = confirmBooking;
+            } else {
+                document.getElementById('summary-datetime').innerText = '-';
+                const confirmBtn = document.getElementById('btn-confirm');
+                confirmBtn.disabled = true;
+                confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                confirmBtn.onclick = null;
+            }
+        }
+
+        function confirmBooking() {
+            if (!state.doctor || !state.date || !state.startTime) return;
+
+            fetch('/appointments/api/book/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    doctor_id: state.doctor,
+                    date: state.date,
+                    start_time: state.startTime
+                })
+            }).then(res => res.json()).then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    window.location.href = '/appointments/patient/dashboard/';
+                }
+            }).catch(err => {
+                alert('Something went wrong!');
+            });
+        }
+    </script>
+</body>
+
+</html>

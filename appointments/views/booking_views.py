@@ -107,3 +107,46 @@ class RescheduleAppointmentView(APIView):
             appointment.save()
             
         return Response(AppointmentSerializer(appointment).data)
+
+
+class BookAppointmentAPIView(APIView):
+    """
+    Called by Patients to book an available AppointmentSlot.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        doctor_id = request.data.get('doctor_id')
+        date_str = request.data.get('date')
+        start_time_str = request.data.get('start_time')
+        
+        if not all([doctor_id, date_str, start_time_str]):
+            return Response({"error": "Missing doctor_id, date, or start_time."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        slot = AppointmentSlot.objects.filter(
+            doctor_id=doctor_id,
+            date=date_str,
+            start_time=start_time_str,
+            status='AVAILABLE'
+        ).first()
+        
+        if not slot:
+            return Response({"error": "This slot is not available."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        with transaction.atomic():
+            slot.status = 'BOOKED'
+            slot.save()
+            
+            appointment = Appointment.objects.create(
+                patient=request.user,
+                doctor=slot.doctor,
+                appointment_date=slot.date,
+                start_time=slot.start_time,
+                end_time=slot.end_time,
+                status='REQUESTED'
+            )
+            
+        return Response({
+            "message": "Appointment requested successfully!", 
+            "appointment_id": appointment.id
+        })

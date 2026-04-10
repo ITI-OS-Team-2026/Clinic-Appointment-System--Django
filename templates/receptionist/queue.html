@@ -3,47 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <title>Receptionist Queue</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .btn { padding: 6px 12px; cursor: pointer; margin: 2px; border-radius: 4px; }
+        .btn-confirm { background-color: #4CAF50; color: white; border: none; }
+        .btn-checkin { background-color: #2196F3; color: white; border: none; }
+        .btn-reschedule { background-color: #ff9800; color: white; border: none; }
+    </style>
 </head>
 <body>
 
-    <h1>Today's Queue — {{ today }}</h1>
+    <h1>Receptionist Queue Dashboard</h1>
     <a href="/users/logout/">Logout</a>
-
     <hr>
 
-    {% if appointments %}
-        <table border="1" cellpadding="8">
+    <table border="1" cellpadding="8" style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
             <tr>
-                <th>Time</th>
-                <th>Patient</th>
-                <th>Doctor</th>
+                <th>Appointment Time</th>
+                <th>Patient ID</th>
+                <th>Doctor ID</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th>Check-in Time</th>
+                <th>Actions</th>
             </tr>
+        </thead>
+        <tbody id="appointments-body">
+            <tr><td colspan="6">Loading appointments from API...</td></tr>
+        </tbody>
+    </table>
 
-            {% for appt in appointments %}
-            <tr>
-                <td>{{ appt.start_time }}</td>
-                <td>{{ appt.patient.get_full_name }}</td>
-                <td>Dr. {{ appt.doctor.get_full_name }}</td>
-                <td>{{ appt.status }}</td>
-                <td>
-                    {% if appt.status == 'CONFIRMED' %}
-                        <form method="POST" action="/records/receptionist/checkin/{{ appt.id }}/">
-                            {% csrf_token %}
-                            <button type="submit">Check In</button>
-                        </form>
-                    {% else %}
-                        Checked In ✓
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+    <script>
+        // دالة عشان نجيب بيها الـ CSRF Token من الكوكيز
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
 
-    {% else %}
-        <p>No appointments for today.</p>
-    {% endif %}
+        // دالة Step 2: تحميل المواعيد بتاعت النهاردة
+        function loadAppointments() {
+            fetch('/appointments/today/')
+                .then(res => {
+                    if(res.status === 403) throw new Error("Forbidden: You must be logged in as a Receptionist.");
+                    return res.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('appointments-body');
+                    tbody.innerHTML = '';
+                    
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6">No appointments found for today.</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach(appt => {
+                        let actionButtons = '';
+                        
+                        // زرار الـ Confirm بيظهر لو الـ Status: REQUESTED
+                        if (appt.status === 'REQUESTED') {
+                            actionButtons += `<button class="btn btn-confirm" onclick="confirmAppt(${appt.id})">Confirm</button>`;
+                        } 
+                        // أزرار الـ Check In و الـ Reschedule بيظهروا لو الـ Status: CONFIRMED
+                        else if (appt.status === 'CONFIRMED') {
+                            actionButtons += `<button class="btn btn-checkin" onclick="checkInAppt(${appt.id})">Check In</button>`;
+                            actionButtons += `<button class="btn btn-reschedule" onclick="rescheduleAppt(${appt.id})">Reschedule</button>`;
+                        }
+                        
+                        if (actionButtons === '') actionButtons = '<i>No Actions Available</i>';
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${appt.start_time} - ${appt.end_time}</td>
+                                <td>${appt.patient}</td>
+                                <td>${appt.doctor}</td>
+                                <td><strong>${appt.status}</strong></td>
+                                <td>${appt.check_in_time || '-'}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(err => {
+                    document.getElementById('appointments-body').innerHTML = `<tr><td colspan="6" style="color:red">${err.message}</td></tr>`;
+                });
+        }
 
+        // دالة Step 3: الـ Confirm
+        function confirmAppt(id) {
+            fetch(`/appointments/${id}/confirm/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+            }).then(res => res.json()).then(data => {
+                if (data.error) alert("Error: " + data.error);
+                else loadAppointments();
+            });
+        }
+
+        // دالة Step 4: الـ Check In
+        function checkInAppt(id) {
+            fetch(`/appointments/${id}/checkin/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+            }).then(res => res.json()).then(data => {
+                if (data.error) alert("Error: " + data.error);
+                else loadAppointments();
+            });
+        }
+
+        // دالة Step 5: الـ Reschedule
+        function rescheduleAppt(id) {
+            const newDate = prompt("Enter new date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+            if (!newDate) return;
+            const newStart = prompt("Enter new start time (HH:MM:SS):", "09:00:00");
+            if (!newStart) return;
+            const newEnd = prompt("Enter new end time (HH:MM:SS):", "09:30:00");
+            if (!newEnd) return;
+            const reason = prompt("Reason for reschedule:", "Patient requested change");
+            if (!reason) return;
+
+            fetch(`/appointments/${id}/reschedule/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    new_date: newDate,
+                    new_start_time: newStart,
+                    new_end_time: newEnd,
+                    reason: reason
+                })
+            }).then(res => res.json()).then(data => {
+                if (data.error) alert("Error: " + data.error);
+                else loadAppointments();
+            });
+        }
+
+        window.onload = loadAppointments;
+    </script>
 </body>
 </html>

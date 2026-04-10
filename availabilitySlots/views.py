@@ -14,7 +14,7 @@ class DoctorAvailableSlotsView(APIView):
 
     def get(self, request, doctor_id):
         try:
-            doctor = User.objects.get(id=doctor_id, groups__name='Doctor')
+            doctor = User.objects.get(id=doctor_id, role='DOCTOR')
         except User.DoesNotExist:
             return Response({'error': 'Doctor not found'}, status=404)
 

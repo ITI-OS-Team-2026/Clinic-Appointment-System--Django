@@ -1,10 +1,16 @@
 from django.urls import path
-from .views.patient_views import patient_dashboard
+from .views.patient_views import patient_dashboard, patient_book_appointment
 from .views.schedule_views import TodayAppointmentsView
-from .views.booking_views import ConfirmAppointmentView, CheckInAppointmentView, RescheduleAppointmentView
+from .views.booking_views import ConfirmAppointmentView, CheckInAppointmentView, RescheduleAppointmentView, BookAppointmentAPIView
+from .views.api_views import DoctorListAPIView
 
 urlpatterns = [
     path('patient/dashboard/', patient_dashboard, name='patient_dashboard'),
+    path('patient/book/', patient_book_appointment, name='patient-book-appointment'),
+    
+    path('api/doctors/', DoctorListAPIView.as_view(), name='api-doctors-list'),
+    path('api/book/', BookAppointmentAPIView.as_view(), name='api-book-appointment'),
+    
     path('today/', TodayAppointmentsView.as_view(), name='today-appointments'),
     path('<int:appointment_id>/confirm/', ConfirmAppointmentView.as_view(), name='confirm-appointment'),
     path('<int:appointment_id>/checkin/', CheckInAppointmentView.as_view(), name='checkin-appointment'),

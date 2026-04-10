@@ -1,31 +1,34 @@
 from datetime import datetime, timedelta, date
-from .models import DoctorWeeklySchedule, DoctorScheduleException, AppointmentSlot
+from .models import AppointmentSlot
+from appointments.models import DoctorSchedule, ScheduleException
 
 def generate_slots_for_date(doctor, target_date: date):
     try:
-        exception = DoctorScheduleException.objects.get(
-            doctor=doctor, date=target_date
+        exception = ScheduleException.objects.get(
+            doctor=doctor, exception_date=target_date
         )
-        if exception.exception_type == 'DAY_OFF':
+        if exception.is_day_off:
             return []   
 
         start_time = exception.start_time
         end_time   = exception.end_time
-        slot_duration = 30
+        slot_duration = 30 # default
         buffer        = 5
 
-    except DoctorScheduleException.DoesNotExist:
+    except ScheduleException.DoesNotExist:
         day_of_week = target_date.weekday()
-        try:
-            schedule = DoctorWeeklySchedule.objects.get(
-                doctor=doctor, day_of_week=day_of_week
-            )
-            start_time    = schedule.start_time
-            end_time      = schedule.end_time
-            slot_duration = schedule.slot_duration_minutes
-            buffer        = schedule.buffer_minutes
-        except DoctorWeeklySchedule.DoesNotExist:
-            return [] 
+        # Find schedule from appointments app
+        schedule = DoctorSchedule.objects.filter(
+            doctor=doctor, day_of_week=day_of_week
+        ).first()
+        
+        if not schedule:
+            return []
+            
+        start_time    = schedule.start_time
+        end_time      = schedule.end_time
+        slot_duration = schedule.session_duration_mins
+        buffer        = schedule.buffer_duration_mins
 
     slots_created = []
     current = datetime.combine(target_date, start_time)
