@@ -55,3 +55,55 @@ class CheckInAppointmentView(APIView):
             
         serializer = AppointmentSerializer(appointment)
         return Response(serializer.data)
+
+class RescheduleAppointmentView(APIView):
+    """
+    Reschedules an appointment.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, appointment_id):
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        new_date = request.data.get('new_date')
+        new_start = request.data.get('new_start_time')
+        new_end = request.data.get('new_end_time')
+        reason = request.data.get('reason')
+        
+        if not all([new_date, new_start, new_end, reason]):
+            return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        new_slot = AppointmentSlot.objects.filter(
+            doctor=appointment.doctor, date=new_date, start_time=new_start, status='AVAILABLE'
+        ).first()
+        
+        if not new_slot:
+            return Response({"error": "Selected slot is not available."}, status=status.HTTP_400_BAD_REQUEST)
+
+        old_dt = datetime.datetime.combine(appointment.appointment_date, appointment.start_time)
+        new_dt = datetime.datetime.combine(new_slot.date, new_slot.start_time)
+        if timezone.is_naive(old_dt): old_dt = timezone.make_aware(old_dt)
+        if timezone.is_naive(new_dt): new_dt = timezone.make_aware(new_dt)
+
+        with transaction.atomic():
+            old_slot = AppointmentSlot.objects.filter(
+                doctor=appointment.doctor, date=appointment.appointment_date, start_time=appointment.start_time
+            ).first()
+            if old_slot:
+                old_slot.status = 'AVAILABLE'
+                old_slot.save()
+                
+            new_slot.status = 'BOOKED'
+            new_slot.save()
+            
+            AuditTrail.objects.create(
+                appointment=appointment, changed_by=request.user, 
+                old_datetime=old_dt, new_datetime=new_dt, reason=reason
+            )
+            
+            appointment.appointment_date = new_slot.date
+            appointment.start_time = new_slot.start_time
+            appointment.end_time = new_end
+            appointment.save()
+            
+        return Response(AppointmentSerializer(appointment).data)
