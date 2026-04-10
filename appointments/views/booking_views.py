@@ -10,7 +10,27 @@ from appointments.models import Appointment, AuditTrail
 from availabilitySlots.models import AppointmentSlot
 from appointments.serializers import AppointmentSerializer
 
+class ConfirmAppointmentView(APIView):
+    """
+    Confirms an appointment.
+    Transitions status from REQUESTED to CONFIRMED.
+    """
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, appointment_id):
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if appointment.status != 'REQUESTED':
+            return Response(
+                {"error": f"Cannot confirm appointment. Current status is {appointment.status}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        appointment.status = 'CONFIRMED'
+        appointment.save()
+        
+        serializer = AppointmentSerializer(appointment)
+        return Response(serializer.data)
 
 class CheckInAppointmentView(APIView):
     """
