@@ -2,39 +2,184 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Receptionist Queue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue & Wait Management | Aura Health Systems</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#0891B2', secondary: '#14B8A6', background: '#F8FAFC' },
+                    fontFamily: { headline: ["Manrope", "sans-serif"], body: ["Inter", "sans-serif"] }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .btn { padding: 6px 12px; cursor: pointer; margin: 2px; border-radius: 4px; }
-        .btn-confirm { background-color: #4CAF50; color: white; border: none; }
-        .btn-checkin { background-color: #2196F3; color: white; border: none; }
-        .btn-reschedule { background-color: #ff9800; color: white; border: none; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { vertical-align: middle; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 999px; font-size: 0.70rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        .status-requested { background-color: #f1f5f9; color: #64748b; }
+        .status-confirmed { background-color: #e0f2fe; color: #0284c7; }
+        .status-checked-in { background-color: #dcfce7; color: #16a34a; }
+        
+        .action-btn { transition: all 0.2s; }
+        .action-btn:hover { transform: translateY(-1px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Modal glass effect */
+        .modal-backdrop { background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
     </style>
 </head>
-<body>
+<body class="text-slate-800 antialiased selection:bg-primary selection:text-white pb-20">
 
-    <h1>Receptionist Queue Dashboard</h1>
-    <a href="/users/logout/">Logout</a>
-    <hr>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-headline font-extrabold text-slate-900 tracking-tight">Wait Time Management</h1>
+                    <p class="text-xs font-semibold text-primary uppercase tracking-wider">Aura Health Systems • Reception Desk</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex items-center gap-3 bg-slate-50 py-2 px-4 rounded-full border border-slate-100">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs font-bold font-headline text-slate-500 uppercase tracking-widest" id="clock">00:00 AM</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold shadow-sm">R</div>
+                        <span class="text-sm font-semibold text-slate-700 hidden sm:block">{{ request.user.username }}</span>
+                    </div>
+                    <a href="/users/logout/" class="text-sm font-bold text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-3 py-2 rounded-lg">Logout</a>
+                </div>
+            </div>
+        </header>
 
-    <table border="1" cellpadding="8" style="width: 100%; text-align: left; border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th>Appointment Time</th>
-                <th>Patient ID</th>
-                <th>Doctor ID</th>
-                <th>Status</th>
-                <th>Check-in Time</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="appointments-body">
-            <tr><td colspan="6">Loading appointments from API...</td></tr>
-        </tbody>
-    </table>
+        <main class="flex-grow max-w-[90rem] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- Top Controls -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                <!-- KPI Cards -->
+                <div class="flex gap-4 w-full md:w-auto">
+                    <div class="bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-sm flex-1 md:flex-none">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Checked In (Waiting)</p>
+                        <p class="text-2xl font-headline font-extrabold text-slate-800" id="kpi-waiting">0</p>
+                    </div>
+                    <div class="bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-sm flex-1 md:flex-none">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Scheduled</p>
+                        <p class="text-2xl font-headline font-extrabold text-slate-800" id="kpi-total">0</p>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="relative w-full md:w-80">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input type="text" id="searchInput" placeholder="Search patient or doctor..." class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none shadow-sm placeholder:text-slate-400">
+                </div>
+            </div>
+
+            <!-- Queue Dashboard -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
+                
+                <!-- Table Header -->
+                <div class="grid grid-cols-12 gap-4 px-8 py-4 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest sticky top-0 z-10 hidden md:grid">
+                    <div class="col-span-2">Time Slot</div>
+                    <div class="col-span-3">Patient</div>
+                    <div class="col-span-2">Provider</div>
+                    <div class="col-span-2">Status</div>
+                    <div class="col-span-1">Wait Time</div>
+                    <div class="col-span-2 text-right">Action</div>
+                </div>
+
+                <!-- Table Body -->
+                <div id="appointments-body" class="overflow-y-auto custom-scrollbar flex-1 p-2">
+                    <!-- Loading state -->
+                    <div class="flex flex-col items-center justify-center h-40 text-slate-400">
+                        <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-primary">sync</span>
+                        <p class="text-sm font-medium">Fetching active queue...</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div id="reschedule-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0" onclick="closeRescheduleModal()"></div>
+        <div class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <!-- Modal Header -->
+            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule Appointment</h2>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1" id="reschedule-patient-name">Patient Name</p>
+                </div>
+                <button onclick="closeRescheduleModal()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Date Selector -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Dates</label>
+                        <select id="reschedule-date-select" onchange="renderModalSlots()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">Loading dates...</option>
+                        </select>
+                    </div>
+
+                    <!-- Slot Selector -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Slots</label>
+                        <div id="reschedule-slots-container" class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for Rescheduling</label>
+                    <textarea id="reschedule-reason" rows="2" placeholder="e.g. Patient requested a later time" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeRescheduleModal()" class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                <button id="reschedule-confirm-btn" disabled onclick="submitReschedule()" class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
+                    Confirm Reschedule
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-20 opacity-0 z-50">
+        <span class="material-symbols-outlined text-secondary" id="toast-icon">info</span>
+        <p id="toast-message" class="font-medium text-sm">Message here</p>
+    </div>
 
     <script>
-        // دالة عشان نجيب بيها الـ CSRF Token من الكوكيز
+        // State
+        let allAppointments = [];
+        let timerInterval = null;
+        let activeRescheduleAppt = null;
+        let rescheduleSlots = [];
+        let selectedSlot = null;
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -51,103 +196,277 @@
         }
         const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
 
-        // دالة Step 2: تحميل المواعيد بتاعت النهاردة
-        function loadAppointments() {
-            fetch('/appointments/today/')
-                .then(res => {
-                    if(res.status === 403) throw new Error("Forbidden: You must be logged in as a Receptionist.");
-                    return res.json();
-                })
-                .then(data => {
-                    const tbody = document.getElementById('appointments-body');
-                    tbody.innerHTML = '';
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
+            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
+        }
+
+        // --- Reschedule Logic ---
+        function openRescheduleModal(appt) {
+            activeRescheduleAppt = appt;
+            selectedSlot = null;
+            rescheduleSlots = [];
+            
+            document.getElementById('reschedule-patient-name').innerText = appt.patient_name;
+            document.getElementById('reschedule-date-select').innerHTML = '<option value="">Loading appointments...</option>';
+            document.getElementById('reschedule-slots-container').innerHTML = '<div class="col-span-full py-8 text-center"><span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
+            document.getElementById('reschedule-confirm-btn').disabled = true;
+            document.getElementById('reschedule-reason').value = 'Patient requested change';
+
+            document.getElementById('reschedule-modal').classList.remove('hidden');
+            
+            // Fetch availability for this doctor
+            fetch(`/api/doctors/${appt.doctor}/slots/`)
+                .then(res => res.json())
+                .then(slots => {
+                    rescheduleSlots = slots;
+                    const dateSelect = document.getElementById('reschedule-date-select');
+                    dateSelect.innerHTML = '<option value="">-- Choose Date --</option>';
                     
-                    if (!data || data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6">No appointments found for today.</td></tr>';
-                        return;
+                    // Group unique dates
+                    const dates = [...new Set(slots.map(s => s.date))];
+                    if(dates.length === 0) {
+                        dateSelect.innerHTML = '<option value="">No slots found</option>';
+                    } else {
+                        dates.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d;
+                            opt.innerText = new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                            dateSelect.appendChild(opt);
+                        });
                     }
-                    
-                    data.forEach(appt => {
-                        let actionButtons = '';
-                        
-                        // زرار الـ Confirm بيظهر لو الـ Status: REQUESTED
-                        if (appt.status === 'REQUESTED') {
-                            actionButtons += `<button class="btn btn-confirm" onclick="confirmAppt(${appt.id})">Confirm</button>`;
-                        } 
-                        // أزرار الـ Check In و الـ Reschedule بيظهروا لو الـ Status: CONFIRMED
-                        else if (appt.status === 'CONFIRMED') {
-                            actionButtons += `<button class="btn btn-checkin" onclick="checkInAppt(${appt.id})">Check In</button>`;
-                            actionButtons += `<button class="btn btn-reschedule" onclick="rescheduleAppt(${appt.id})">Reschedule</button>`;
-                        }
-                        
-                        if (actionButtons === '') actionButtons = '<i>No Actions Available</i>';
-                        
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${appt.start_time} - ${appt.end_time}</td>
-                                <td>${appt.patient}</td>
-                                <td>${appt.doctor}</td>
-                                <td><strong>${appt.status}</strong></td>
-                                <td>${appt.check_in_time || '-'}</td>
-                                <td>${actionButtons}</td>
-                            </tr>
-                        `;
-                    });
-                })
-                .catch(err => {
-                    document.getElementById('appointments-body').innerHTML = `<tr><td colspan="6" style="color:red">${err.message}</td></tr>`;
+                    renderModalSlots();
                 });
         }
 
-        // دالة Step 3: الـ Confirm
-        function confirmAppt(id) {
-            fetch(`/appointments/${id}/confirm/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            }).then(res => res.json()).then(data => {
-                if (data.error) alert("Error: " + data.error);
-                else loadAppointments();
+        function closeRescheduleModal() {
+            document.getElementById('reschedule-modal').classList.add('hidden');
+            activeRescheduleAppt = null;
+        }
+
+        function renderModalSlots() {
+            const date = document.getElementById('reschedule-date-select').value;
+            const container = document.getElementById('reschedule-slots-container');
+            container.innerHTML = '';
+            
+            if (!date) {
+                container.innerHTML = '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
+                return;
+            }
+
+            const filteredSlots = rescheduleSlots.filter(s => s.date === date);
+            if(filteredSlots.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-xs text-slate-400 py-4">No slots available for this date.</p>';
+                return;
+            }
+
+            filteredSlots.forEach(slot => {
+                const btn = document.createElement('button');
+                const t = slot.start_time.substring(0, 5);
+                btn.className = "py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all";
+                if (selectedSlot && selectedSlot.id === slot.id) {
+                    btn.classList.add('bg-primary', 'text-white', 'border-primary');
+                }
+                btn.innerText = t;
+                btn.onclick = () => {
+                    selectedSlot = slot;
+                    document.querySelectorAll('#reschedule-slots-container button').forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
+                    btn.classList.add('bg-primary', 'text-white', 'border-primary');
+                    document.getElementById('reschedule-confirm-btn').disabled = false;
+                };
+                container.appendChild(btn);
             });
         }
 
-        // دالة Step 4: الـ Check In
-        function checkInAppt(id) {
-            fetch(`/appointments/${id}/checkin/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            }).then(res => res.json()).then(data => {
-                if (data.error) alert("Error: " + data.error);
-                else loadAppointments();
-            });
-        }
-
-        // دالة Step 5: الـ Reschedule
-        function rescheduleAppt(id) {
-            const newDate = prompt("Enter new date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
-            if (!newDate) return;
-            const newStart = prompt("Enter new start time (HH:MM:SS):", "09:00:00");
-            if (!newStart) return;
-            const newEnd = prompt("Enter new end time (HH:MM:SS):", "09:30:00");
-            if (!newEnd) return;
-            const reason = prompt("Reason for reschedule:", "Patient requested change");
-            if (!reason) return;
-
-            fetch(`/appointments/${id}/reschedule/`, {
+        function submitReschedule() {
+            if(!activeRescheduleAppt || !selectedSlot) return;
+            
+            const btn = document.getElementById('reschedule-confirm-btn');
+            btn.disabled = true;
+            btn.innerText = 'Processing...';
+            
+            fetch(`/appointments/${activeRescheduleAppt.id}/reschedule/`, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    new_date: newDate,
-                    new_start_time: newStart,
-                    new_end_time: newEnd,
-                    reason: reason
+                    new_date: selectedSlot.date,
+                    new_start_time: selectedSlot.start_time,
+                    new_end_time: selectedSlot.end_time,
+                    reason: document.getElementById('reschedule-reason').value
                 })
             }).then(res => res.json()).then(data => {
-                if (data.error) alert("Error: " + data.error);
-                else loadAppointments();
+                if (data.error) {
+                    showToast(data.error, true);
+                    btn.disabled = false;
+                    btn.innerText = 'Confirm Reschedule';
+                } else {
+                    showToast("Appointment Rescheduled!");
+                    closeRescheduleModal();
+                    loadAppointments();
+                }
+            }).catch(err => {
+                showToast("Something went wrong", true);
+                btn.disabled = false;
             });
         }
 
-        window.onload = loadAppointments;
+        // --- General UI Logic ---
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            return timeStr.substring(0, 5); // HH:MM
+        }
+        
+        function calculateWaitTime(checkInIso) {
+            if (!checkInIso) return '-';
+            const checkInTime = new Date(checkInIso);
+            const now = new Date();
+            const diffMs = now - checkInTime;
+            
+            if (diffMs < 0) return '00:00';
+            
+            const totalSeconds = Math.floor(diffMs / 1000);
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        function updateWaitTimesUI() {
+            document.querySelectorAll('.wait-time-calc').forEach(el => {
+                const iso = el.getAttribute('data-time');
+                if(iso) {
+                    const waitStr = calculateWaitTime(iso);
+                    el.innerText = waitStr;
+                    const mins = parseInt(waitStr);
+                    if (mins >= 20) el.classList.add('text-rose-500', 'font-extrabold');
+                }
+            });
+        }
+
+        function performAction(id, action) {
+            const appt = allAppointments.find(a => a.id === id);
+            
+            if (action === 'reschedule') {
+                openRescheduleModal(appt);
+                return;
+            }
+
+            fetch(`/appointments/${id}/${action}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+            }).then(res => res.json()).then(data => {
+                if (data.error) showToast(data.error, true);
+                else { showToast("Action Successful!"); loadAppointments(); }
+            }).catch(err => showToast("Network Error", true));
+        }
+
+        function renderAppointments() {
+            const tbody = document.getElementById('appointments-body');
+            const searchQ = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allAppointments.filter(a => {
+                if (searchQ === '') return !['COMPLETED', 'NO_SHOW', 'CANCELLED'].includes(a.status);
+                const pName = (a.patient_name || '').toLowerCase();
+                const dName = (a.doctor_name || '').toLowerCase();
+                return pName.includes(searchQ) || dName.includes(searchQ);
+            });
+
+            filtered.sort((a, b) => {
+                if (a.status === 'CHECKED_IN' && b.status !== 'CHECKED_IN') return -1;
+                if (b.status === 'CHECKED_IN' && a.status !== 'CHECKED_IN') return 1;
+                return a.start_time.localeCompare(b.start_time);
+            });
+            
+            const waitingCount = filtered.filter(a => a.status === 'CHECKED_IN').length;
+            document.getElementById('kpi-waiting').innerText = waitingCount;
+            document.getElementById('kpi-total').innerText = allAppointments.length;
+
+            tbody.innerHTML = '';
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">done_all</span><p class="text-sm font-medium">Queue is empty or all matched are completed.</p></div>`;
+                return;
+            }
+            
+            filtered.forEach(appt => {
+                let actionBtnHtml = '';
+                let statusClass = 'status-requested';
+                let statusText = appt.status;
+                let waitTimeHtml = '<span class="text-slate-300">-</span>';
+                
+                if (appt.status === 'REQUESTED') {
+                    statusClass = 'status-requested';
+                    actionBtnHtml = `<button class="action-btn px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200" onclick="performAction(${appt.id}, 'confirm')">Confirm</button>`;
+                } 
+                else if (appt.status === 'CONFIRMED') {
+                    statusClass = 'status-confirmed';
+                    actionBtnHtml = `
+                        <button class="action-btn px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold shadow-md shadow-primary/20" onclick="performAction(${appt.id}, 'checkin')">Check In</button>
+                        <button class="action-btn px-3 py-2 text-rose-500 rounded-lg text-xs font-bold hover:bg-rose-50" onclick="performAction(${appt.id}, 'noshow')">No Show</button>
+                        <button class="action-btn px-3 py-2 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-50" onclick="performAction(${appt.id}, 'reschedule')">Reschedule</button>
+                    `;
+                }
+                else if (appt.status === 'CHECKED_IN') {
+                    statusClass = 'status-checked-in';
+                    statusText = 'In Waiting';
+                    waitTimeHtml = `<div class="flex items-center gap-1 font-bold"><span class="material-symbols-outlined text-[16px] text-amber-500">timer</span><span class="wait-time-calc text-slate-700" data-time="${appt.check_in_time}">${calculateWaitTime(appt.check_in_time)}</span></div>`;
+                    actionBtnHtml = `<button class="action-btn px-4 py-2 bg-secondary text-white rounded-lg text-xs font-bold shadow-md shadow-secondary/20" onclick="performAction(${appt.id}, 'complete')">✓ Complete</button>`;
+                }
+                
+                const tr = document.createElement('div');
+                tr.className = "grid grid-cols-1 md:grid-cols-12 gap-y-4 gap-x-4 px-6 md:px-8 py-5 border-b border-slate-100 hover:bg-slate-50/50 transition-colors items-center group";
+                tr.innerHTML = `
+                    <div class="col-span-2 flex flex-col max-md:hidden">
+                        <span class="text-sm font-bold text-slate-800">${formatTime(appt.start_time)}</span>
+                        <span class="text-xs font-semibold text-slate-400">to ${formatTime(appt.end_time)}</span>
+                    </div>
+                    <div class="col-span-3 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold font-headline select-none">${(appt.patient_name || '?')[0].toUpperCase()}</div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-slate-800 line-clamp-1">${appt.patient_name}</span>
+                        </div>
+                    </div>
+                    <div class="col-span-2 flex flex-col">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Provider</span>
+                        <span class="text-sm font-semibold text-slate-700 line-clamp-1">${appt.doctor_name}</span>
+                    </div>
+                    <div class="col-span-2 flex items-center">
+                        <span class="status-pill ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="col-span-1 flex flex-col justify-center">${waitTimeHtml}</div>
+                    <div class="col-span-2 flex flex-wrap items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">${actionBtnHtml}</div>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateWaitTimesUI();
+        }
+
+        function loadAppointments() {
+            fetch('/appointments/today/')
+                .then(res => res.json())
+                .then(data => { allAppointments = data; renderAppointments(); })
+                .catch(err => showToast("Sync Error", true));
+        }
+
+        setInterval(() => {
+            const d = new Date();
+            let hh = d.getHours();
+            let mm = d.getMinutes();
+            const ampm = hh >= 12 ? 'PM' : 'AM';
+            hh = hh % 12 || 12;
+            mm = mm < 10 ? '0'+mm : mm;
+            document.getElementById('clock').innerText = hh + ':' + mm + ' ' + ampm;
+        }, 1000);
+
+        document.getElementById('searchInput').addEventListener('input', renderAppointments);
+        window.onload = () => {
+            loadAppointments();
+            setInterval(loadAppointments, 30000);
+            setInterval(updateWaitTimesUI, 1000);
+        };
     </script>
 </body>
 </html>

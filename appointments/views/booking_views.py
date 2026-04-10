@@ -133,6 +133,10 @@ class BookAppointmentAPIView(APIView):
         if not slot:
             return Response({"error": "This slot is not available."}, status=status.HTTP_400_BAD_REQUEST)
             
+        # Check if the patient already has an appointment at this exact time
+        if Appointment.objects.filter(patient=request.user, appointment_date=slot.date, start_time=slot.start_time).exists():
+            return Response({"error": "You already have an appointment scheduled for this time."}, status=status.HTTP_400_BAD_REQUEST)
+
         with transaction.atomic():
             slot.status = 'BOOKED'
             slot.save()
@@ -150,3 +154,56 @@ class BookAppointmentAPIView(APIView):
             "message": "Appointment requested successfully!", 
             "appointment_id": appointment.id
         })
+
+class CompleteAppointmentView(APIView):
+    """
+    Completes an appointment.
+    Transitions status from CHECKED_IN to COMPLETED.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, appointment_id):
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if appointment.status != 'CHECKED_IN':
+            return Response(
+                {"error": f"Cannot complete. Current status is {appointment.status}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        appointment.status = 'COMPLETED'
+        appointment.save()
+        
+        return Response(AppointmentSerializer(appointment).data)
+
+class NoShowAppointmentView(APIView):
+    """
+    Marks an appointment as NO_SHOW.
+    Transitions status from REQUESTED/CONFIRMED to NO_SHOW.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, appointment_id):
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if appointment.status not in ['REQUESTED', 'CONFIRMED']:
+            return Response(
+                {"error": f"Cannot mark as No Show. Current status is {appointment.status}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        with transaction.atomic():
+            appointment.status = 'NO_SHOW'
+            appointment.save()
+            
+            # Also free up the slot so others can book it again if desired!
+            slot = AppointmentSlot.objects.filter(
+                doctor=appointment.doctor,
+                date=appointment.appointment_date,
+                start_time=appointment.start_time
+            ).first()
+            if slot:
+                slot.status = 'AVAILABLE'
+                slot.save()
+        
+        return Response(AppointmentSerializer(appointment).data)
