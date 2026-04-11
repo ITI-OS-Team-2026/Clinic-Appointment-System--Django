@@ -89,14 +89,37 @@
         </a>
         <a
           class="flex items-center gap-3 px-4 py-2 text-slate-500 font-medium hover:text-error transition-colors"
-          href="#"
+          href="{% url 'logout' %}"
         >
           <span class="material-symbols-outlined">logout</span>
           <span class="font-headline tracking-tight text-sm">Logout</span>
         </a>
       </div>
     </aside>
-    
+
+    <header
+      class="fixed top-0 left-72 right-0 h-16 flex justify-between items-center px-10 bg-slate-50 dark:bg-slate-950 z-40"
+    >
+      <div></div>
+      <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="text-right">
+          <p class="text-xs font-bold font-headline text-on-surface">
+            {{ request.user.first_name }} <span>{{ request.user.last_name|default:"Administrator" }}</span>
+          </p>
+          <p
+            class="text-[10px] text-on-surface-variant uppercase tracking-wider"
+          >
+            {{ request.user.email }}
+          </p>
+        </div>
+        <img
+          alt="Administrator Profile"
+          class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAlLI-enqpRmJ-fDU7kwYnz1StrAs_pN1hZAvdmiOhS_l0hJZoK_aRrjzrcjxJ2y3RU-pN5Ou9ZdZWGOfPU6MYDSc3Eau-T4r8kO63-BGdW5XzGYmfg-mAFn4vdCZpKIEJES5JI-nNV7lp063TiilnhmSh-bJGhgcqwGGc4sODNMU_1kMu1BPe59H7H1C4vgW-jGue2W8uOluYS2L2Xt6UiaQSOWBb5i8MUgwiMr-_b8NiK-LAenWjbwpKFvb8HVSrklndeU_vH1w"
+        />
+      </div>
+    </header>
+
     <!-- Main Content Canvas -->
     <main class="ml-72 pt-24 pb-12 px-10 min-h-screen bg-surface-container-low">
       <!-- Zone 2: KPI Cards -->
@@ -426,10 +449,7 @@
                 class="w-full bg-primary-container rounded-t-lg"
                 style="height: 95%"
               ></div>
-              <span
-                class="text-[10px] font-bold text-primary mt-2"
-                >Thu</span
-              >
+              <span class="text-[10px] font-bold text-primary mt-2">Thu</span>
             </div>
             <div class="flex flex-col items-center flex-1">
               <div
@@ -497,11 +517,10 @@
                 >Hire New Doctor</span
               >
             </div>
-              <span
-                class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-all"
-                >chevron_right</span
-              >
-            </div>
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-all"
+              >chevron_right</span
+            >
           </a>
           <button
             class="w-full flex items-center justify-between p-5 bg-surface-container-lowest rounded-xl hover:bg-secondary-fixed transition-all group"
@@ -551,7 +570,6 @@
                 New patients joined in the last 24h
               </p>
             </div>
-            
           </div>
           <div class="space-y-4">
             <div
