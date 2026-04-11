@@ -42,7 +42,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-headline font-extrabold text-slate-900 leading-none">Aura Health</h2>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Systems Admin</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Clinic Reception</p>
                     </div>
                 </div>
             </div>
@@ -61,27 +61,23 @@
                     <span class="text-[15px]">Appointment Search</span>
                 </a>
 
-                <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 mt-8">Operations</p>
-
-                <a href="#" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all">
-                    <span class="material-symbols-outlined text-[22px]">person_search</span>
-                    <span class="text-[15px]">Patient Records</span>
+                <a href="{% url 'receptionist_profile' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/profile/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">account_circle</span>
+                    <span class="text-[15px]">My Profile</span>
                 </a>
 
-                <a href="#" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all">
-                    <span class="material-symbols-outlined text-[22px]">payments</span>
-                    <span class="text-[15px]">Billing & Finance</span>
-                </a>
             </nav>
 
             <!-- Bottom Profile -->
             <div class="p-6 border-t border-slate-100">
                 <div class="bg-slate-50 p-4 rounded-3xl flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary font-bold">R</div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-900 truncate">{{ request.user.username }}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">Receptionist</p>
-                    </div>
+                    <a href="{% url 'receptionist_profile' %}" class="flex flex-1 items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary font-bold group-hover:bg-secondary group-hover:text-white transition-all">R</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-900 truncate">{{ request.user.username }}</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">My Account</p>
+                        </div>
+                    </a>
                     <a href="/users/logout/" class="text-rose-400 hover:text-rose-600">
                         <span class="material-symbols-outlined text-[20px]">logout</span>
                     </a>
@@ -109,10 +105,6 @@
                 </div>
 
                 <div class="flex items-center gap-6">
-                    <div class="relative hidden sm:block">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-                        <input type="text" placeholder="Global search..." class="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 w-64 transition-all">
-                    </div>
                     <button class="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 shadow-sm relative">
                         <span class="material-symbols-outlined text-[22px]">notifications</span>
                         <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
