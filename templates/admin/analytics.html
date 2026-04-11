@@ -1,0 +1,455 @@
+{% load tailwind_tags %}
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Analytics | Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+
+    {% tailwind_css %}
+  </head>
+  <body class="bg-surface text-on-surface">
+    <!-- Zone 1: Navigation Shell -->
+    <aside
+      class="h-screen w-72 fixed left-0 top-0 flex flex-col py-8 px-6 bg-slate-100/80 dark:bg-slate-900/80 backdrop-blur-xl z-50"
+    >
+      <div class="mb-10 px-2">
+        <h1
+          class="text-xl font-bold text-cyan-900 dark:text-cyan-100 tracking-tight font-headline"
+        >
+          The Sanctuary
+        </h1>
+        <p
+          class="text-xs text-on-surface-variant font-medium tracking-widest uppercase mt-1"
+        >
+          Clinical Oversight
+        </p>
+      </div>
+      <nav class="flex-1 space-y-2">
+        <a
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
+          href="{% url 'admin_dashboard' %}"
+        >
+          <span class="material-symbols-outlined">dashboard</span>
+          <span class="font-headline tracking-tight">Dashboard</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
+          href="{% url 'add_doctor' %}"
+        >
+          <span class="material-symbols-outlined">person_add</span>
+          <span class="font-headline tracking-tight">Add Doctor</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
+          href="{% url 'add_receptionist' %}"
+        >
+          <span class="material-symbols-outlined">support_agent</span>
+          <span class="font-headline tracking-tight">Add Receptionist</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-cyan-700 dark:text-cyan-300 font-bold border-r-4 border-cyan-700 bg-slate-200/50 transition-colors"
+          href="{% url 'analytics' %}"
+        >
+          <span class="material-symbols-outlined">analytics</span>
+          <span class="font-headline tracking-tight">Analytics</span>
+        </a>
+      </nav>
+      <div class="mt-auto space-y-2 pt-6 border-t border-slate-200/50">
+        <button
+          class="w-full holographic-btn text-white py-3 rounded-xl font-headline font-bold text-sm shadow-lg shadow-cyan-900/10 active:scale-95 duration-150 mb-6"
+        >
+          New Appointment
+        </button>
+        <a
+          class="flex items-center gap-3 px-4 py-2 text-slate-500 font-medium hover:text-primary transition-colors"
+          href="#"
+        >
+          <span class="material-symbols-outlined">help</span>
+          <span class="font-headline tracking-tight text-sm">Help Center</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-2 text-slate-500 font-medium hover:text-error transition-colors"
+          href="{% url 'logout' %}"
+        >
+          <span class="material-symbols-outlined">logout</span>
+          <span class="font-headline tracking-tight text-sm">Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <header
+      class="fixed top-0 left-72 right-0 h-16 flex justify-between items-center px-10 bg-slate-50 dark:bg-slate-950 z-40"
+    >
+      <div></div>
+      <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="text-right">
+          <p class="text-xs font-bold font-headline text-on-surface">
+            {{ request.user.first_name }} {{
+            request.user.last_name|default:"Administrator" }}
+          </p>
+          <p
+            class="text-[10px] text-on-surface-variant uppercase tracking-wider"
+          >
+            {{ request.user.email }}
+          </p>
+        </div>
+        <img
+          alt="Administrator Profile"
+          class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAlLI-enqpRmJ-fDU7kwYnz1StrAs_pN1hZAvdmiOhS_l0hJZoK_aRrjzrcjxJ2y3RU-pN5Ou9ZdZWGOfPU6MYDSc3Eau-T4r8kO63-BGdW5XzGYmfg-mAFn4vdCZpKIEJES5JI-nNV7lp063TiilnhmSh-bJGhgcqwGGc4sODNMU_1kMu1BPe59H7H1C4vgW-jGue2W8uOluYS2L2Xt6UiaQSOWBb5i8MUgwiMr-_b8NiK-LAenWjbwpKFvb8HVSrklndeU_vH1w"
+        />
+      </div>
+    </header>
+
+    <!-- Main Content Canvas -->
+    <main class="ml-72 pt-24 pb-12 px-10 min-h-screen bg-surface-container-low">
+      <!-- Page Header -->
+      <div class="mb-10">
+        <div class="flex justify-between items-start">
+          <div>
+            <h1
+              class="text-4xl font-extrabold text-on-surface font-headline tracking-tight"
+            >
+              Analytics & Insights
+            </h1>
+            <p class="text-on-surface-variant mt-2 text-lg">
+              Clinical performance metrics and system overview
+            </p>
+          </div>
+          <a
+            href="{% url 'export_analytics_csv' %}"
+            class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-headline font-bold hover:shadow-lg hover:shadow-primary/30 transition-all hover:scale-105"
+          >
+            <span class="material-symbols-outlined">download</span>
+            <span>Export CSV</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div
+          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-primary-fixed rounded-lg text-primary">
+              <span class="material-symbols-outlined">groups</span>
+            </div>
+            <span class="text-primary text-xs font-bold font-headline"
+              >Active</span
+            >
+          </div>
+          <h3
+            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
+          >
+            Total Patients
+          </h3>
+          <p class="text-3xl font-extrabold text-on-surface font-headline">
+            {{ total_patients }}
+          </p>
+        </div>
+
+        <div
+          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-secondary-container rounded-lg text-secondary">
+              <span class="material-symbols-outlined">stethoscope</span>
+            </div>
+            <span class="text-secondary text-xs font-bold font-headline"
+              >Staff</span
+            >
+          </div>
+          <h3
+            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
+          >
+            Doctors on Board
+          </h3>
+          <p class="text-3xl font-extrabold text-on-surface font-headline">
+            {{ total_doctors }}
+          </p>
+        </div>
+
+        <div
+          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div
+              class="p-2 bg-tertiary-container rounded-lg text-on-tertiary-container"
+            >
+              <span class="material-symbols-outlined">calendar_today</span>
+            </div>
+            <span class="text-tertiary text-xs font-bold font-headline"
+              >Scheduled</span
+            >
+          </div>
+          <h3
+            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
+          >
+            Total Appointments
+          </h3>
+          <p class="text-3xl font-extrabold text-on-surface font-headline">
+            {{ total_appointments }}
+          </p>
+        </div>
+
+        <div
+          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-primary-fixed-dim rounded-lg text-primary-fixed">
+              <span class="material-symbols-outlined">support_agent</span>
+            </div>
+            <span class="text-primary text-xs font-bold font-headline"
+              >Team</span
+            >
+          </div>
+          <h3
+            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
+          >
+            Receptionists
+          </h3>
+          <p class="text-3xl font-extrabold text-on-surface font-headline">
+            {{ total_receptionists }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <!-- Appointment Status -->
+        <div class="bg-surface-container-lowest rounded-xl p-8">
+          <h2
+            class="text-xl font-extrabold text-on-surface font-headline tracking-tight mb-6"
+          >
+            Appointment Status
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-on-surface-variant font-medium"
+                >Completed</span
+              >
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-24 bg-surface-container-low h-2 rounded-full overflow-hidden"
+                >
+                  <div
+                    class="bg-primary h-full rounded-full"
+                    style="width: {% if total_appointments > 0 %}{% widthratio completed_appointments total_appointments 100 %}{% else %}0{% endif %}%"
+                  ></div>
+                </div>
+                <span class="text-sm font-bold text-on-surface min-w-12"
+                  >{{ completed_appointments }}</span
+                >
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-on-surface-variant font-medium"
+                >Confirmed</span
+              >
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-24 bg-surface-container-low h-2 rounded-full overflow-hidden"
+                >
+                  <div
+                    class="bg-secondary h-full rounded-full"
+                    style="width: {% if total_appointments > 0 %}{% widthratio confirmed_appointments total_appointments 100 %}{% else %}0{% endif %}%"
+                  ></div>
+                </div>
+                <span class="text-sm font-bold text-on-surface min-w-12"
+                  >{{ confirmed_appointments }}</span
+                >
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-on-surface-variant font-medium"
+                >Cancelled</span
+              >
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-24 bg-surface-container-low h-2 rounded-full overflow-hidden"
+                >
+                  <div
+                    class="bg-error h-full rounded-full"
+                    style="width: {% if total_appointments > 0 %}{% widthratio cancelled_appointments total_appointments 100 %}{% else %}0{% endif %}%"
+                  ></div>
+                </div>
+                <span class="text-sm font-bold text-on-surface min-w-12"
+                  >{{ cancelled_appointments }}</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Growth Metrics -->
+        <div class="bg-surface-container-lowest rounded-xl p-8">
+          <h2
+            class="text-xl font-extrabold text-on-surface font-headline tracking-tight mb-6"
+          >
+            Growth Metrics
+          </h2>
+          <div class="space-y-6">
+            <div>
+              <div class="flex justify-between mb-2">
+                <span class="text-sm text-on-surface-variant font-medium"
+                  >Last 7 Days Appointments</span
+                >
+                <span class="text-lg font-bold text-primary"
+                  >{{ appointments_last_week }}</span
+                >
+              </div>
+              <div
+                class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden"
+              >
+                <div
+                  class="bg-primary h-full rounded-full"
+                  style="width: 65%"
+                ></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-2">
+                <span class="text-sm text-on-surface-variant font-medium"
+                  >New Registrations (This Month)</span
+                >
+                <span class="text-lg font-bold text-secondary"
+                  >{{ new_registrations_this_month }}</span
+                >
+              </div>
+              <div
+                class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden"
+              >
+                <div
+                  class="bg-secondary h-full rounded-full"
+                  style="width: 40%"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div
+          class="bg-cyan-900 text-white p-8 rounded-xl overflow-hidden relative"
+        >
+          <div class="relative z-10">
+            <h2
+              class="text-xl font-extrabold font-headline tracking-tight mb-6"
+            >
+              System Health
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <p
+                  class="text-xs font-bold uppercase tracking-widest opacity-70"
+                >
+                  Completion Rate
+                </p>
+                <p class="text-2xl font-bold font-headline mt-1">
+                  {% if total_appointments > 0 %}{% widthratio
+                  completed_appointments total_appointments 100 %}%{% else
+                  %}0%{% endif %}
+                </p>
+              </div>
+              <div>
+                <p
+                  class="text-xs font-bold uppercase tracking-widest opacity-70"
+                >
+                  Average Patients/Doctor
+                </p>
+                <p class="text-2xl font-bold font-headline mt-1">
+                  {% if total_doctors > 0 %} {% widthratio total_patients
+                  total_doctors 1 %} {% else %} 0 {% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -right-4 -bottom-4 opacity-10">
+            <span class="material-symbols-outlined text-8xl">analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Doctors -->
+      <div class="bg-surface-container-lowest rounded-xl p-8">
+        <h2
+          class="text-xl font-extrabold text-on-surface font-headline tracking-tight mb-6"
+        >
+          Top Performing Doctors
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr
+                class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold border-b border-slate-100"
+              >
+                <th class="pb-4">Doctor Name</th>
+                <th class="pb-4">Specialization</th>
+                <th class="pb-4">Experience</th>
+                <th class="pb-4 text-right">Appointments</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              {% for doctor in top_doctors %}
+              <tr
+                class="group hover:bg-surface-container-low transition-colors"
+              >
+                <td class="py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary-fixed text-xs font-bold"
+                    >
+                      {{ doctor.first_name|first }}{{ doctor.last_name|first }}
+                    </div>
+                    <span class="text-sm font-medium text-on-surface">
+                      {{ doctor.first_name }} {{
+                      doctor.last_name|default:doctor.username }}
+                    </span>
+                  </div>
+                </td>
+                <td class="py-4 text-sm text-on-surface-variant">
+                  {{ doctor.doctor_profile.specialization|default:"N/A" }}
+                </td>
+                <td class="py-4 text-sm text-on-surface-variant">
+                  {{ doctor.doctor_profile.experience_years|default:"N/A" }}
+                  years
+                </td>
+                <td class="py-4 text-right">
+                  <span
+                    class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[10px] font-extrabold uppercase tracking-tighter"
+                  >
+                    {{ doctor.appointment_count }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td
+                  colspan="4"
+                  class="py-8 text-center text-on-surface-variant"
+                >
+                  No doctor data available
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

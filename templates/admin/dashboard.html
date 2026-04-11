@@ -40,38 +40,31 @@
       <nav class="flex-1 space-y-2">
         <a
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-cyan-700 dark:text-cyan-300 font-bold border-r-4 border-cyan-700 bg-slate-200/50 transition-colors"
-          href="#"
+          href="{% url 'admin_dashboard' %}"
         >
           <span class="material-symbols-outlined">dashboard</span>
-          <span class="font-headline tracking-tight">Home</span>
+          <span class="font-headline tracking-tight">Dashboard</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
-          href="#"
+          href="{% url 'add_doctor' %}"
         >
-          <span class="material-symbols-outlined">badge</span>
-          <span class="font-headline tracking-tight">Staff Management</span>
+          <span class="material-symbols-outlined">person_add</span>
+          <span class="font-headline tracking-tight">Add Doctor</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
-          href="#"
+          href="{% url 'add_receptionist' %}"
         >
-          <span class="material-symbols-outlined">group</span>
-          <span class="font-headline tracking-tight">Patient Directory</span>
+          <span class="material-symbols-outlined">support_agent</span>
+          <span class="font-headline tracking-tight">Add Receptionist</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
-          href="#"
+          href="{% url 'analytics' %}"
         >
-          <span class="material-symbols-outlined">calendar_month</span>
-          <span class="font-headline tracking-tight">Master Calendar</span>
-        </a>
-        <a
-          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
-          href="#"
-        >
-          <span class="material-symbols-outlined">settings</span>
-          <span class="font-headline tracking-tight">Settings</span>
+          <span class="material-symbols-outlined">analytics</span>
+          <span class="font-headline tracking-tight">Analytics</span>
         </a>
       </nav>
       <div class="mt-auto space-y-2 pt-6 border-t border-slate-200/50">
@@ -104,7 +97,8 @@
       <div class="flex items-center gap-3 group cursor-pointer">
         <div class="text-right">
           <p class="text-xs font-bold font-headline text-on-surface">
-            {{ request.user.first_name }} <span>{{ request.user.last_name|default:"Administrator" }}</span>
+            {{ request.user.first_name }}
+            <span>{{ request.user.last_name|default:"Administrator" }}</span>
           </p>
           <p
             class="text-[10px] text-on-surface-variant uppercase tracking-wider"
@@ -123,380 +117,6 @@
     <!-- Main Content Canvas -->
     <main class="ml-72 pt-24 pb-12 px-10 min-h-screen bg-surface-container-low">
       <!-- Zone 2: KPI Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div
-          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all group"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div class="p-2 bg-primary-fixed rounded-lg text-primary">
-              <span class="material-symbols-outlined">groups</span>
-            </div>
-            <span
-              class="text-tertiary text-xs font-bold font-headline flex items-center gap-1"
-            >
-              <span class="material-symbols-outlined text-sm">trending_up</span>
-              +12%
-            </span>
-          </div>
-          <h3
-            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
-          >
-            Total Patients
-          </h3>
-          <p class="text-2xl font-extrabold text-on-surface font-headline">
-            1,204 Total
-          </p>
-        </div>
-        <div
-          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div class="p-2 bg-secondary-container rounded-lg text-secondary">
-              <span class="material-symbols-outlined">stethoscope</span>
-            </div>
-            <span class="text-slate-400 text-xs font-bold font-headline"
-              >Stable</span
-            >
-          </div>
-          <h3
-            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
-          >
-            Staff on Duty
-          </h3>
-          <p class="text-2xl font-extrabold text-on-surface font-headline">
-            5 Doctors active
-          </p>
-        </div>
-        <div
-          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div
-              class="p-2 bg-tertiary-container rounded-lg text-on-tertiary-container"
-            >
-              <span class="material-symbols-outlined">calendar_today</span>
-            </div>
-            <span
-              class="text-tertiary text-xs font-bold font-headline flex items-center gap-1"
-            >
-              Peak Hours
-            </span>
-          </div>
-          <h3
-            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
-          >
-            Today's Traffic
-          </h3>
-          <p class="text-2xl font-extrabold text-on-surface font-headline">
-            42 Appointments
-          </p>
-        </div>
-        <div
-          class="bg-surface-container-lowest p-6 rounded-xl tonal-shift hover:shadow-xl hover:shadow-cyan-900/5 transition-all"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div class="p-2 bg-error-container rounded-lg text-error">
-              <span class="material-symbols-outlined">warning</span>
-            </div>
-            <span class="text-error text-xs font-bold font-headline"
-              >Action Required</span
-            >
-          </div>
-          <h3
-            class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label"
-          >
-            Pending Action
-          </h3>
-          <p class="text-2xl font-extrabold text-on-surface font-headline">
-            3 Cancelled
-          </p>
-        </div>
-      </div>
-      <!-- Zone 3: Live Data -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-        <!-- Left Column: Live Queue -->
-        <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl p-8">
-          <div class="flex justify-between items-center mb-8">
-            <div>
-              <h2
-                class="text-xl font-extrabold text-on-surface font-headline tracking-tight"
-              >
-                Live Appointment Queue
-              </h2>
-              <p class="text-sm text-on-surface-variant font-medium">
-                Real-time patient check-ins
-              </p>
-            </div>
-            <button
-              class="text-primary text-sm font-bold flex items-center gap-1 hover:underline underline-offset-4 transition-all"
-            >
-              View Full Queue
-              <span class="material-symbols-outlined text-sm"
-                >arrow_forward</span
-              >
-            </button>
-          </div>
-          <div class="overflow-hidden">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr
-                  class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold border-b border-slate-100"
-                >
-                  <th class="pb-4">Time</th>
-                  <th class="pb-4">Patient Name</th>
-                  <th class="pb-4">Doctor / Room</th>
-                  <th class="pb-4 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-50">
-                <tr
-                  class="group hover:bg-surface-container-low transition-colors"
-                >
-                  <td
-                    class="py-5 font-headline font-bold text-sm text-on-surface"
-                  >
-                    09:15 AM
-                  </td>
-                  <td class="py-5">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-8 h-8 rounded-full bg-primary-fixed-dim flex items-center justify-center text-primary-fixed text-xs font-bold"
-                      >
-                        EK
-                      </div>
-                      <span class="text-sm font-medium text-on-surface"
-                        >Eleanor Kade</span
-                      >
-                    </div>
-                  </td>
-                  <td class="py-5 text-sm text-on-surface-variant">
-                    Dr. Aris / Room 402
-                  </td>
-                  <td class="py-5 text-right">
-                    <span
-                      class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-extrabold uppercase tracking-tighter"
-                      >Waiting</span
-                    >
-                  </td>
-                </tr>
-                <tr
-                  class="group hover:bg-surface-container-low transition-colors"
-                >
-                  <td
-                    class="py-5 font-headline font-bold text-sm text-on-surface"
-                  >
-                    09:30 AM
-                  </td>
-                  <td class="py-5">
-                    <div class="flex items-center gap-3">
-                      <img
-                        alt="Patient"
-                        class="w-8 h-8 rounded-full object-cover"
-                        data-alt="headshot of a mature man with grey hair, neutral expression, clean medical lighting"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzqzg21xi8ybKazAFOQ3iFiZaaXOpfTE2CwfhdyYZAQEmXyQw2zVV9fu62fC_-eNIlzGB2j0yscBTL7NZAmn2uprBgUwjj2I7d-TMY0vF363bxRhluq3y90Rgxq1kfDhkfGIolWKq77c86WZwvRNlh8IYS90LvNbl4hH744lNp7OG7PBR1us_TStPsKZGqxq7AxURJ2E2Pp5W5oCvqwhsf6wjWYS-g-IO2gkqCZI8dvkdXGdIgu0ssjoFpuvP33GSZAbyJ8z1yTjU"
-                      />
-                      <span class="text-sm font-medium text-on-surface"
-                        >Julian Vane</span
-                      >
-                    </div>
-                  </td>
-                  <td class="py-5 text-sm text-on-surface-variant">
-                    Dr. Thorne / Room 101
-                  </td>
-                  <td class="py-5 text-right">
-                    <span
-                      class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-extrabold uppercase tracking-tighter"
-                      >Waiting</span
-                    >
-                  </td>
-                </tr>
-                <tr
-                  class="group hover:bg-surface-container-low transition-colors"
-                >
-                  <td
-                    class="py-5 font-headline font-bold text-sm text-on-surface"
-                  >
-                    10:00 AM
-                  </td>
-                  <td class="py-5">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-8 h-8 rounded-full bg-secondary-fixed-dim flex items-center justify-center text-secondary-fixed text-xs font-bold"
-                      >
-                        SM
-                      </div>
-                      <span class="text-sm font-medium text-on-surface"
-                        >Sarah Miller</span
-                      >
-                    </div>
-                  </td>
-                  <td class="py-5 text-sm text-on-surface-variant">
-                    Dr. Aris / Room 402
-                  </td>
-                  <td class="py-5 text-right">
-                    <span
-                      class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-extrabold uppercase tracking-tighter"
-                      >Waiting</span
-                    >
-                  </td>
-                </tr>
-                <tr
-                  class="group hover:bg-surface-container-low transition-colors"
-                >
-                  <td
-                    class="py-5 font-headline font-bold text-sm text-on-surface"
-                  >
-                    10:15 AM
-                  </td>
-                  <td class="py-5">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary text-xs font-bold"
-                      >
-                        RB
-                      </div>
-                      <span class="text-sm font-medium text-on-surface"
-                        >Robert Bent</span
-                      >
-                    </div>
-                  </td>
-                  <td class="py-5 text-sm text-on-surface-variant">
-                    Dr. Patel / Room 205
-                  </td>
-                  <td class="py-5 text-right">
-                    <span
-                      class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-extrabold uppercase tracking-tighter"
-                      >Waiting</span
-                    >
-                  </td>
-                </tr>
-                <tr
-                  class="group hover:bg-surface-container-low transition-colors"
-                >
-                  <td
-                    class="py-5 font-headline font-bold text-sm text-on-surface"
-                  >
-                    10:45 AM
-                  </td>
-                  <td class="py-5">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant text-xs font-bold"
-                      >
-                        LH
-                      </div>
-                      <span class="text-sm font-medium text-on-surface"
-                        >Lucy Hirst</span
-                      >
-                    </div>
-                  </td>
-                  <td class="py-5 text-sm text-on-surface-variant">
-                    Dr. Thorne / Room 101
-                  </td>
-                  <td class="py-5 text-right">
-                    <span
-                      class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-extrabold uppercase tracking-tighter"
-                      >Waiting</span
-                    >
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <!-- Right Column: Activity Chart -->
-        <div class="bg-surface-container-lowest rounded-xl p-8">
-          <div class="mb-8">
-            <h2
-              class="text-xl font-extrabold text-on-surface font-headline tracking-tight"
-            >
-              Weekly Traffic
-            </h2>
-            <p class="text-sm text-on-surface-variant font-medium">
-              Last 7 days
-            </p>
-          </div>
-          <div class="flex items-end justify-between h-48 gap-2">
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 60%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Mon</span
-              >
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 80%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Tue</span
-              >
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 45%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Wed</span
-              >
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-container rounded-t-lg"
-                style="height: 95%"
-              ></div>
-              <span class="text-[10px] font-bold text-primary mt-2">Thu</span>
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 70%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Fri</span
-              >
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 30%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Sat</span
-              >
-            </div>
-            <div class="flex flex-col items-center flex-1">
-              <div
-                class="w-full bg-primary-fixed-dim rounded-t-lg"
-                style="height: 20%"
-              ></div>
-              <span class="text-[10px] font-bold text-on-surface-variant mt-2"
-                >Sun</span
-              >
-            </div>
-          </div>
-          <div class="mt-8 pt-8 border-t border-slate-50">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold text-on-surface-variant"
-                >Average Wait Time</span
-              >
-              <span class="text-xs font-bold text-primary">12 mins</span>
-            </div>
-            <div
-              class="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden"
-            >
-              <div
-                class="bg-primary h-full rounded-full"
-                style="width: 45%"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
       <!-- Zone 4: Management Hub -->
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <div class="lg:col-span-1 space-y-4">
@@ -522,7 +142,8 @@
               >chevron_right</span
             >
           </a>
-          <button
+          <a
+            href="{% url 'add_receptionist' %}"
             class="w-full flex items-center justify-between p-5 bg-surface-container-lowest rounded-xl hover:bg-secondary-fixed transition-all group"
           >
             <div class="flex items-center gap-3">
@@ -537,7 +158,7 @@
               class="material-symbols-outlined text-slate-300 group-hover:text-secondary transition-all"
               >chevron_right</span
             >
-          </button>
+          </a>
           <div
             class="bg-cyan-900 text-white p-6 rounded-xl overflow-hidden relative mt-8"
           >
@@ -572,107 +193,48 @@
             </div>
           </div>
           <div class="space-y-4">
-            <div
-              class="flex items-center justify-between p-4 rounded-xl tonal-shift hover:bg-surface-container-low transition-all"
-            >
-              <div class="flex items-center gap-4">
-                <img
-                  alt="Patient"
-                  class="w-12 h-12 rounded-full object-cover"
-                  data-alt="young professional woman with dark hair and spectacles, bright soft studio lighting, medical setting feel"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXiHFFnvvCcnYT2DThON83hU4gCbEGchpYd9MwugvDbhAznz96cEHW97STuDwVdqgWJI9pA_93QJp79Ea8nfUVnsdbrguoqLDRNhRFh2gEfsTTKeJtxOnPB77BIccFJIaplcYNnQe9UXaXAkpBHeejDMMKFMrm5pKDt67MNYNPcK7YudQtGJ40JJneFVgbfR-R2wVvK5lnrvCglGxXAri5kERw9_RW39xjrUY-Y5FdNRItFWzgraNkeqvEpL0hAg2pWJR69MjRVr4"
-                />
-                <div>
-                  <h4
-                    class="text-sm font-extrabold text-on-surface font-headline"
-                  >
-                    Clara Mendez
-                  </h4>
-                  <p
-                    class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter"
-                  >
-                    Registration ID: #PN-2291
-                  </p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-xs font-bold text-on-surface">
-                  Registered 2h ago
-                </p>
-                <p
-                  class="text-[10px] text-tertiary font-bold uppercase tracking-widest"
-                >
-                  Self-Pay
-                </p>
-              </div>
-            </div>
+            {% for patient in recent_patients %}
             <div
               class="flex items-center justify-between p-4 rounded-xl tonal-shift hover:bg-surface-container-low transition-all"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary text-lg font-bold"
+                  class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary text-lg font-bold"
                 >
-                  BH
+                  {{ patient.first_name|first }}{{ patient.last_name|first }}
                 </div>
                 <div>
                   <h4
                     class="text-sm font-extrabold text-on-surface font-headline"
                   >
-                    Benjamin Hughes
+                    {{ patient.first_name }} {{
+                    patient.last_name|default:patient.username }}
                   </h4>
                   <p
                     class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter"
                   >
-                    Registration ID: #PN-2290
+                    Registration ID: #PN-{{ patient.id|stringformat:"04d" }}
                   </p>
                 </div>
               </div>
               <div class="text-right">
                 <p class="text-xs font-bold text-on-surface">
-                  Registered 5h ago
+                  Registered {{ patient.date_joined|timesince }} ago
                 </p>
                 <p
                   class="text-[10px] text-primary font-bold uppercase tracking-widest"
                 >
-                  Insurance Verified
+                  Just Registered
                 </p>
               </div>
             </div>
-            <div
-              class="flex items-center justify-between p-4 rounded-xl tonal-shift hover:bg-surface-container-low transition-all"
-            >
-              <div class="flex items-center gap-4">
-                <img
-                  alt="Patient"
-                  class="w-12 h-12 rounded-full object-cover"
-                  data-alt="portrait of a middle-aged man with short beard and friendly expression, warm natural lighting"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJl5JVpu0lSHPpdA2zvy0TH0vb-hsvo9qFVAzQQ8MbPWXJg4NqyoZJcV5_Ga8F-f3E-CDaObsnKc5FmRG0AMUcKf0UXwQ1gD014FqXiqgMRRIN90etVPrNrG7nl46_59yx_OeublOFROUz0-C8L1DRJ8b4SFfXBwgs-vTMxysMtk6YFaqUq_ZKNsivTkvSgz2HorfelGAFUk5waNIt9VLyEH_HxQV0zNPVdEc8_P7E7EcW268kwx9Lk_WeBiKit6TMsjxRb0L9t6Q"
-                />
-                <div>
-                  <h4
-                    class="text-sm font-extrabold text-on-surface font-headline"
-                  >
-                    Arthur Pendelton
-                  </h4>
-                  <p
-                    class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter"
-                  >
-                    Registration ID: #PN-2289
-                  </p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-xs font-bold text-on-surface">
-                  Registered 12h ago
-                </p>
-                <p
-                  class="text-[10px] text-primary font-bold uppercase tracking-widest"
-                >
-                  Insurance Verified
-                </p>
-              </div>
+            {% empty %}
+            <div class="text-center py-8">
+              <p class="text-sm text-on-surface-variant">
+                No patient registrations in the last 24 hours
+              </p>
             </div>
+            {% endfor %}
           </div>
         </div>
       </div>
