@@ -6,7 +6,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView
 )
 
-from users.views.admin_views import admin_dashboard
+from users.views.admin_views import add_doctor, admin_dashboard
 from .views.auth_views import login_view, logout_view, patient_register, forget_password
 
 urlpatterns = [
@@ -18,4 +18,5 @@ urlpatterns = [
     path('forget-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='auth/password_reset_confirm.html'), name='password_reset_confirm'),
     path('forget-password/complete/', PasswordResetCompleteView.as_view(template_name='auth/password_reset_complete.html'), name='password_reset_complete'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
+    path('admin-dashboard/add-doctor/', add_doctor, name='add_doctor'),
 ]

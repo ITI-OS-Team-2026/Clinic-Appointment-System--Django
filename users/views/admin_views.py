@@ -4,6 +4,9 @@ from django.contrib import messages
 from ..decorators import is_admin_role
 from users.models import User, DoctorProfile
 
+def admin_dashboard(request):
+    return render(request, 'admin/dashboard.html')
+
 @login_required(login_url='login')
 @user_passes_test(is_admin_role)
 def add_doctor(request):

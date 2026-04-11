@@ -1,0 +1,650 @@
+{% load tailwind_tags %}
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Hire New Doctor | The Clinical Sanctuary</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    {% tailwind_css %}
+   
+  </head>
+  <body class="text-on-surface">
+    <!-- SideNavBar -->
+    <aside
+      class="h-screen w-64 fixed left-0 top-0 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-xl flex flex-col p-4 z-50"
+    >
+      <div class="mb-10 px-2 flex items-center gap-3">
+        <div
+          class="w-10 h-10 ethereal-gradient rounded-xl flex items-center justify-center text-white"
+        >
+          <span class="material-symbols-outlined" data-icon="medical_services"
+            >medical_services</span
+          >
+        </div>
+        <div>
+          <h1
+            class="text-xl font-bold text-cyan-900 dark:text-cyan-100 tracking-tight font-manrope"
+          >
+            The Sanctuary
+          </h1>
+          <p
+            class="text-[10px] font-semibold uppercase tracking-wider text-slate-500"
+          >
+            Medical Administration
+          </p>
+        </div>
+      </div>
+      <nav class="flex-1 space-y-1">
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/50 transition-colors duration-200 rounded-lg group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400 group-hover:text-cyan-600"
+            data-icon="dashboard"
+            >dashboard</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Dashboard</span
+          >
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 bg-white text-cyan-700 font-bold rounded-lg scale-[0.98] transition-transform"
+          href="#"
+        >
+          <span class="material-symbols-outlined" data-icon="person_add"
+            >person_add</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Recruitment</span
+          >
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/50 transition-colors duration-200 rounded-lg group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400 group-hover:text-cyan-600"
+            data-icon="medical_services"
+            >medical_services</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Physicians</span
+          >
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/50 transition-colors duration-200 rounded-lg group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400 group-hover:text-cyan-600"
+            data-icon="verified"
+            >verified</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Credentials</span
+          >
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/50 transition-colors duration-200 rounded-lg group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400 group-hover:text-cyan-600"
+            data-icon="settings"
+            >settings</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Settings</span
+          >
+        </a>
+      </nav>
+      <div class="mt-auto pt-4 border-t border-slate-300/30">
+        <button
+          class="w-full ethereal-gradient text-white py-3 rounded-xl font-semibold text-sm mb-4 flex items-center justify-center gap-2 shadow-lg shadow-cyan-900/10"
+        >
+          <span class="material-symbols-outlined text-sm" data-icon="add"
+            >add</span
+          >
+          New Recruitment
+        </button>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-cyan-600 transition-colors"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400"
+            data-icon="help"
+            >help</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Support</span
+          >
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-red-500 transition-colors"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined text-slate-400"
+            data-icon="logout"
+            >logout</span
+          >
+          <span class="text-xs font-semibold uppercase tracking-wider"
+            >Logout</span
+          >
+        </a>
+      </div>
+    </aside>
+    <!-- TopAppBar -->
+    <header
+      class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-slate-100/80 backdrop-blur-md flex justify-between items-center h-16 px-8 ml-64 transition-all"
+    >
+      <div class="flex items-center gap-8">
+        <span class="text-lg font-black text-cyan-900 font-manrope"
+          >The Clinical Sanctuary</span
+        >
+        <nav class="hidden md:flex gap-6">
+          <a
+            class="text-slate-500 hover:text-cyan-600 text-sm font-inter transition-all"
+            href="#"
+            >Applications</a
+          >
+          <a
+            class="text-cyan-700 border-b-2 border-cyan-700 text-sm font-inter transition-all"
+            href="#"
+            >Onboarding</a
+          >
+          <a
+            class="text-slate-500 hover:text-cyan-600 text-sm font-inter transition-all"
+            href="#"
+            >Compliance</a
+          >
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <input
+            class="bg-surface-container-high/50 border-none rounded-full px-4 py-1.5 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400"
+            placeholder="Search records..."
+            type="text"
+          />
+          <span
+            class="material-symbols-outlined absolute right-3 top-1.5 text-slate-400 text-sm"
+            data-icon="search"
+            >search</span
+          >
+        </div>
+        <button class="p-2 text-slate-500 hover:text-cyan-600 transition-all">
+          <span class="material-symbols-outlined" data-icon="notifications"
+            >notifications</span
+          >
+        </button>
+        <button class="p-2 text-slate-500 hover:text-cyan-600 transition-all">
+          <span class="material-symbols-outlined" data-icon="dark_mode"
+            >dark_mode</span
+          >
+        </button>
+        <div class="flex items-center gap-2 pl-4 border-l border-slate-300/30">
+          <img
+            alt="Administrator Profile"
+            class="w-8 h-8 rounded-full object-cover ring-2 ring-white"
+            data-alt="professional portrait of a medical administrator in a modern office, clean professional lighting, serene atmosphere"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsbPTVGgr5gS09cpcWJO5EwiHrHn7QfrTqve_SUPR7KudOQcsQngjFo-1iGR7LyZBuWWFhsaTRtHRJ2--ZMcNttqEM5Xc1tPHtKcjl_HM8tOtSHLSzPCo3FCOKBVXaoGkPrhugGR7aJLmIBhi5cz_f1eoz-03I4Ce5zxZ0_KXhzkMw1BGSw_2ZjelRsSgs6A3ocw8vAK1RE3n2D8K8ZqQ84HKw5UOdZfnH1Gts_ivPD7jaOxLfZVoQIJG4X8vGA_AtxJpgKExOUUk"
+          />
+        </div>
+      </div>
+    </header>
+    <!-- Main Content -->
+    <main class="ml-64 pt-16 min-h-screen bg-surface">
+      <div class="max-w-5xl mx-auto px-8 py-10">
+        <!-- Page Header -->
+        <div class="mb-10">
+          <div
+            class="flex items-center gap-2 text-primary font-semibold text-sm mb-2"
+          >
+            <span
+              class="material-symbols-outlined text-sm"
+              data-icon="arrow_back"
+              >arrow_back</span
+            >
+            <span>Back to Recruitment Dashboard</span>
+          </div>
+          <h2
+            class="text-3xl font-bold text-on-surface font-manrope tracking-tight"
+          >
+            Hire New Doctor
+          </h2>
+          <p class="text-on-surface-variant mt-1">
+            Onboard a new physician to The Clinical Sanctuary ecosystem.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Left Column: Form Steps -->
+          <div class="lg:col-span-8 space-y-8">
+            <!-- Section 1: Personal Information -->
+            <section
+              class="bg-surface-container-lowest rounded-xl p-8 shadow-sm transition-all hover:shadow-md"
+            >
+              <div class="flex items-center gap-4 mb-8">
+                <div
+                  class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary"
+                >
+                  <span class="material-symbols-outlined" data-icon="person"
+                    >person</span
+                  >
+                </div>
+                <h3 class="text-lg font-bold font-manrope">
+                  Personal Information
+                </h3>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2 flex items-center gap-6 mb-4">
+                  <div class="relative group">
+                    <div
+                      class="w-24 h-24 rounded-full bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant overflow-hidden"
+                    >
+                      <span
+                        class="material-symbols-outlined text-3xl text-slate-400 group-hover:scale-110 transition-transform"
+                        data-icon="add_a_photo"
+                        >add_a_photo</span
+                      >
+                    </div>
+                    <button
+                      class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg"
+                    >
+                      <span
+                        class="material-symbols-outlined text-xs"
+                        data-icon="edit"
+                        >edit</span
+                      >
+                    </button>
+                  </div>
+                  <div>
+                    <p class="font-bold text-sm">Profile Image</p>
+                    <p class="text-xs text-on-surface-variant mt-1">
+                      Recommended: Square JPEG or PNG, min. 400x400px.
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Full Name</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="Dr. Jonathan Smith"
+                    type="text"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Email Address</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="j.smith@clinicalsanc.com"
+                    type="email"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Phone Number</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="+1 (555) 000-0000"
+                    type="tel"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Gender</label
+                  >
+                  <select
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm appearance-none"
+                  >
+                    <option>Select Gender</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Non-binary</option>
+                    <option>Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+            <!-- Section 2: Professional Credentials -->
+            <section
+              class="bg-surface-container-lowest rounded-xl p-8 shadow-sm"
+            >
+              <div class="flex items-center gap-4 mb-8">
+                <div
+                  class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    data-icon="verified_user"
+                    style="font-variation-settings: &quot;FILL&quot; 1"
+                    >verified_user</span
+                  >
+                </div>
+                <h3 class="text-lg font-bold font-manrope">
+                  Professional Credentials
+                </h3>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Medical License Number</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="MD-8829-XJ"
+                    type="text"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Years of Experience</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="8"
+                    type="number"
+                  />
+                </div>
+                <div class="md:col-span-2 space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Medical School / Education</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="Johns Hopkins School of Medicine"
+                    type="text"
+                  />
+                </div>
+                <div class="md:col-span-2 space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Professional Bio</label
+                  >
+                  <textarea
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm leading-relaxed"
+                    placeholder="Briefly describe the physician's expertise and philosophy..."
+                    rows="4"
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+            <!-- Section 3: Specialization -->
+            <section
+              class="bg-surface-container-lowest rounded-xl p-8 shadow-sm"
+            >
+              <div class="flex items-center gap-4 mb-8">
+                <div
+                  class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    data-icon="clinical_notes"
+                    >clinical_notes</span
+                  >
+                </div>
+                <h3 class="text-lg font-bold font-manrope">Specialization</h3>
+              </div>
+              <div class="space-y-6">
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Primary Department</label
+                  >
+                  <select
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                  >
+                    <option>Select Department</option>
+                    <option>Cardiology</option>
+                    <option>Neurology</option>
+                    <option>Pediatrics</option>
+                    <option>General Medicine</option>
+                    <option>Surgical Oncology</option>
+                  </select>
+                </div>
+                <div class="space-y-2">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Specific Expertise Tags</label
+                  >
+                  <div
+                    class="flex flex-wrap gap-2 p-4 bg-surface-container-high/20 border-2 border-dashed border-outline-variant/30 rounded-xl"
+                  >
+                    <span
+                      class="px-3 py-1 bg-primary-fixed text-on-primary-fixed-variant text-xs font-bold rounded-full flex items-center gap-1"
+                    >
+                      Echocardiogram
+                      <span
+                        class="material-symbols-outlined text-[14px] cursor-pointer"
+                        data-icon="close"
+                        >close</span
+                      >
+                    </span>
+                    <span
+                      class="px-3 py-1 bg-primary-fixed text-on-primary-fixed-variant text-xs font-bold rounded-full flex items-center gap-1"
+                    >
+                      Hypertension
+                      <span
+                        class="material-symbols-outlined text-[14px] cursor-pointer"
+                        data-icon="close"
+                        >close</span
+                      >
+                    </span>
+                    <button
+                      class="px-3 py-1 border border-primary text-primary text-xs font-bold rounded-full hover:bg-primary/5 transition-colors"
+                    >
+                      + Add Tag
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <!-- Section 4: Account Setup -->
+            <section
+              class="bg-surface-container-lowest rounded-xl p-8 shadow-sm"
+            >
+              <div class="flex items-center gap-4 mb-8">
+                <div
+                  class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant"
+                >
+                  <span class="material-symbols-outlined" data-icon="lock"
+                    >lock</span
+                  >
+                </div>
+                <h3 class="text-lg font-bold font-manrope">Account Setup</h3>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Username</label
+                  >
+                  <input
+                    class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                    placeholder="dr.smith_sanc"
+                    type="text"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Temporary Password</label
+                  >
+                  <div class="relative">
+                    <input
+                      class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
+                      type="password"
+                      value="********"
+                    />
+                    <span
+                      class="material-symbols-outlined absolute right-3 top-3 text-slate-400 text-sm cursor-pointer"
+                      data-icon="visibility"
+                      >visibility</span
+                    >
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant ml-1"
+                    >Access Role</label
+                  >
+                  <div class="flex items-center gap-4 mt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input
+                        checked=""
+                        class="text-primary focus:ring-primary border-outline-variant"
+                        name="role"
+                        type="radio"
+                      />
+                      <span class="text-sm font-medium">Doctor</span>
+                    </label>
+                    <label
+                      class="flex items-center gap-2 cursor-pointer opacity-50"
+                    >
+                      <input
+                        class="text-primary focus:ring-primary border-outline-variant"
+                        name="role"
+                        type="radio"
+                      />
+                      <span class="text-sm font-medium"
+                        >Head of Department</span
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-6">
+              <button
+                class="px-8 py-3 text-primary font-bold hover:underline transition-all"
+              >
+                Save as Draft
+              </button>
+              <button
+                class="px-10 py-4 ethereal-gradient text-white font-bold rounded-xl shadow-xl shadow-cyan-900/20 transform hover:scale-[1.02] transition-all flex items-center gap-3"
+              >
+                <span
+                  class="material-symbols-outlined"
+                  data-icon="check_circle"
+                  style="font-variation-settings: &quot;FILL&quot; 1"
+                  >check_circle</span
+                >
+                Complete Hiring Process
+              </button>
+            </div>
+          </div>
+          <!-- Right Column: Contextual Card -->
+          <div class="lg:col-span-4 sticky top-24 space-y-6">
+            <div
+              class="bg-primary text-white rounded-xl p-6 shadow-xl shadow-primary/10 overflow-hidden relative"
+            >
+              <div class="relative z-10">
+                <h4 class="font-manrope text-xl font-bold mb-4">
+                  Hiring Progress
+                </h4>
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-green-300"
+                      data-icon="check_circle"
+                      >check_circle</span
+                    >
+                    <span class="text-sm">Identify candidates</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-green-300"
+                      data-icon="check_circle"
+                      >check_circle</span
+                    >
+                    <span class="text-sm">Interview rounds</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-6 h-6 rounded-full border-2 border-white/50 flex items-center justify-center text-[10px]"
+                    >
+                      3
+                    </div>
+                    <span class="text-sm font-bold"
+                      >Credential Verification</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 opacity-50">
+                    <div
+                      class="w-6 h-6 rounded-full border-2 border-white/50 flex items-center justify-center text-[10px]"
+                    >
+                      4
+                    </div>
+                    <span class="text-sm">Facility Orientation</span>
+                  </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-white/10">
+                  <p class="text-xs text-white/70 leading-relaxed italic">
+                    "The Clinician Sanctuary maintains a 98% retention rate by
+                    ensuring all credentials are triple-verified during this
+                    stage."
+                  </p>
+                </div>
+              </div>
+              <!-- Background decoration -->
+              <div
+                class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+              ></div>
+            </div>
+            <div
+              class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10"
+            >
+              <h4
+                class="font-manrope text-sm font-bold mb-4 uppercase tracking-wider text-on-surface-variant"
+              >
+                Quick Guidelines
+              </h4>
+              <ul class="space-y-3">
+                <li class="flex gap-3 text-xs text-on-surface-variant">
+                  <span
+                    class="material-symbols-outlined text-tertiary text-sm shrink-0"
+                    data-icon="lightbulb"
+                    >lightbulb</span
+                  >
+                  <span>Verification usually takes 3-5 business days.</span>
+                </li>
+                <li class="flex gap-3 text-xs text-on-surface-variant">
+                  <span
+                    class="material-symbols-outlined text-tertiary text-sm shrink-0"
+                    data-icon="security"
+                    >security</span
+                  >
+                  <span
+                    >Temporary passwords expire in 48 hours for security.</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
