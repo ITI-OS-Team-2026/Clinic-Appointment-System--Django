@@ -22,11 +22,26 @@ class DoctorAvailableSlotsView(APIView):
         in_30_days = today + timedelta(days=30)
         generate_slots_for_range(doctor, today, in_30_days)
 
+        from appointments.models import Appointment
+        
+        # Get all active appointment (date, time) tuples for this doctor
+        active_appointments = Appointment.objects.filter(
+            doctor=doctor,
+            appointment_date__gte=today,
+            status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+        ).values_list('appointment_date', 'start_time')
+        
+        # Initial available slots from DB
         slots = AppointmentSlot.objects.filter(
             doctor=doctor,
             date__gte=today,
             status='AVAILABLE'
         ).order_by('date', 'start_time')
 
-        serializer = AppointmentSlotSerializer(slots, many=True)
+        # Filter out slots that have an matching active appointment tuple
+        # This is a fallback in case status synchronization failed for historical data
+        active_set = set(active_appointments)
+        filtered_slots = [s for s in slots if (s.date, s.start_time) not in active_set]
+
+        serializer = AppointmentSlotSerializer(filtered_slots, many=True)
         return Response(serializer.data)

@@ -6,7 +6,7 @@ from .views.booking_views import (
     RescheduleAppointmentView, BookAppointmentAPIView,
     CompleteAppointmentView, NoShowAppointmentView
 )
-from .views.api_views import DoctorListAPIView
+from .views.api_views import DoctorListAPIView, AppointmentSearchView
 
 urlpatterns = [
     path('patient/dashboard/', patient_dashboard, name='patient_dashboard'),
@@ -14,6 +14,7 @@ urlpatterns = [
     
     path('api/doctors/', DoctorListAPIView.as_view(), name='api-doctors-list'),
     path('api/book/', BookAppointmentAPIView.as_view(), name='api-book-appointment'),
+    path('api/search/', AppointmentSearchView.as_view(), name='api-appointment-search'),
     
     path('today/', TodayAppointmentsView.as_view(), name='today-appointments'),
     path('<int:appointment_id>/confirm/', ConfirmAppointmentView.as_view(), name='confirm-appointment'),

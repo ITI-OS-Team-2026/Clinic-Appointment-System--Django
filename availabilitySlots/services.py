@@ -38,13 +38,24 @@ def generate_slots_for_date(doctor, target_date: date):
 
     while current + slot_delta <= shift_end:
         slot_end = current + slot_delta
+        # Check if an appointment already exists for this slot to avoid "Ghost" available slots
+        from appointments.models import Appointment
+        exists = Appointment.objects.filter(
+            doctor=doctor,
+            appointment_date=target_date,
+            start_time=current.time(),
+            status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+        ).exists()
+        
+        initial_status = 'BOOKED' if exists else 'AVAILABLE'
+
         slot, created = AppointmentSlot.objects.get_or_create(
             doctor     = doctor,
             date       = target_date,
             start_time = current.time(),
             defaults={
                 'end_time': slot_end.time(),
-                'status':   'AVAILABLE',
+                'status':   initial_status,
             }
         )
         if created:

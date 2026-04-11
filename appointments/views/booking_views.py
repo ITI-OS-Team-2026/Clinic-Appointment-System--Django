@@ -86,6 +86,15 @@ class RescheduleAppointmentView(APIView):
         if timezone.is_naive(new_dt): new_dt = timezone.make_aware(new_dt)
 
         with transaction.atomic():
+            # Double check for doctor conflicts even if slot says available (Data Integrity fallback)
+            if Appointment.objects.filter(
+                doctor=appointment.doctor, 
+                appointment_date=new_slot.date, 
+                start_time=new_slot.start_time,
+                status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+            ).exclude(id=appointment.id).exists():
+                return Response({"error": "This slot was recently taken by another appointment. Please refresh and try again."}, status=status.HTTP_400_BAD_REQUEST)
+
             old_slot = AppointmentSlot.objects.filter(
                 doctor=appointment.doctor, date=appointment.appointment_date, start_time=appointment.start_time
             ).first()
@@ -104,7 +113,11 @@ class RescheduleAppointmentView(APIView):
             appointment.appointment_date = new_slot.date
             appointment.start_time = new_slot.start_time
             appointment.end_time = new_end
-            appointment.save()
+            
+            try:
+                appointment.save()
+            except Exception as e:
+                return Response({"error": "An unexpected conflict occurred. Please try a different slot."}, status=status.HTTP_400_BAD_REQUEST)
             
         return Response(AppointmentSerializer(appointment).data)
 
@@ -138,17 +151,29 @@ class BookAppointmentAPIView(APIView):
             return Response({"error": "You already have an appointment scheduled for this time."}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
+            # Robust check against data de-sync: verify doctor doesn't have an appointment already
+            if Appointment.objects.filter(
+                doctor=slot.doctor, 
+                appointment_date=slot.date, 
+                start_time=slot.start_time,
+                status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+            ).exists():
+                return Response({"error": "This slot is already officially booked. Please refresh the page."}, status=status.HTTP_400_BAD_REQUEST)
+
             slot.status = 'BOOKED'
             slot.save()
             
-            appointment = Appointment.objects.create(
-                patient=request.user,
-                doctor=slot.doctor,
-                appointment_date=slot.date,
-                start_time=slot.start_time,
-                end_time=slot.end_time,
-                status='REQUESTED'
-            )
+            try:
+                appointment = Appointment.objects.create(
+                    patient=request.user,
+                    doctor=slot.doctor,
+                    appointment_date=slot.date,
+                    start_time=slot.start_time,
+                    end_time=slot.end_time,
+                    status='REQUESTED'
+                )
+            except Exception as e:
+                return Response({"error": "Failed to create appointment due to a data conflict. Please try another slot."}, status=status.HTTP_400_BAD_REQUEST)
             
         return Response({
             "message": "Appointment requested successfully!", 

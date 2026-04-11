@@ -20,4 +20,11 @@ def receptionist_queue(request):
         'today': today,
         'now': now,
     })
+
+@user_passes_test(is_receptionist, login_url='/users/login/')
+def appointment_management(request):
+    """
+    Renders the master Appointment Search & Management layout.
+    """
+    return render(request, 'receptionist/management.html')
 

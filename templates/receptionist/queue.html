@@ -1,472 +1,170 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queue & Wait Management | Aura Health Systems</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-    <!-- Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { primary: '#0891B2', secondary: '#14B8A6', background: '#F8FAFC' },
-                    fontFamily: { headline: ["Manrope", "sans-serif"], body: ["Inter", "sans-serif"] }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
-        .font-headline { font-family: 'Manrope', sans-serif; }
-        .material-symbols-outlined { vertical-align: middle; }
+{% extends 'receptionist/base_receptionist.html' %}
+
+{% block title %}Queue & Wait Management | Aura Health Systems{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Top Stats -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">Receptionist Queue</h1>
+            <p class="text-sm font-medium text-slate-400 mt-1">Manage today's patient arrivals and wait times.</p>
+        </div>
         
-        .status-pill { padding: 4px 10px; border-radius: 999px; font-size: 0.70rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-        .status-requested { background-color: #f1f5f9; color: #64748b; }
-        .status-confirmed { background-color: #e0f2fe; color: #0284c7; }
-        .status-checked-in { background-color: #dcfce7; color: #16a34a; }
-        
-        .action-btn { transition: all 0.2s; }
-        .action-btn:hover { transform: translateY(-1px); }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-        /* Modal glass effect */
-        .modal-backdrop { background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
-    </style>
-</head>
-<body class="text-slate-800 antialiased selection:bg-primary selection:text-white pb-20">
-
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white/80 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-            <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-headline font-extrabold text-slate-900 tracking-tight">Wait Time Management</h1>
-                    <p class="text-xs font-semibold text-primary uppercase tracking-wider">Aura Health Systems • Reception Desk</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="hidden md:flex items-center gap-3 bg-slate-50 py-2 px-4 rounded-full border border-slate-100">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-bold font-headline text-slate-500 uppercase tracking-widest" id="clock">00:00 AM</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold shadow-sm">R</div>
-                        <span class="text-sm font-semibold text-slate-700 hidden sm:block">{{ request.user.username }}</span>
-                    </div>
-                    <a href="/users/logout/" class="text-sm font-bold text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-3 py-2 rounded-lg">Logout</a>
+        <div class="flex gap-4">
+            <div class="bg-white px-6 py-4 rounded-3xl border border-slate-200 shadow-sm min-w-[180px]">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Checked In (Waiting)</p>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-headline font-extrabold text-slate-800" id="kpi-waiting">0</p>
+                    <span class="text-[10px] font-bold text-emerald-500 mb-1.5 flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">trending_up</span> Live</span>
                 </div>
             </div>
-        </header>
-
-        <main class="flex-grow max-w-[90rem] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-            
-            <!-- Top Controls -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-                <!-- KPI Cards -->
-                <div class="flex gap-4 w-full md:w-auto">
-                    <div class="bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-sm flex-1 md:flex-none">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Checked In (Waiting)</p>
-                        <p class="text-2xl font-headline font-extrabold text-slate-800" id="kpi-waiting">0</p>
-                    </div>
-                    <div class="bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-sm flex-1 md:flex-none">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Scheduled</p>
-                        <p class="text-2xl font-headline font-extrabold text-slate-800" id="kpi-total">0</p>
-                    </div>
-                </div>
-
-                <!-- Search -->
-                <div class="relative w-full md:w-80">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                    <input type="text" id="searchInput" placeholder="Search patient or doctor..." class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none shadow-sm placeholder:text-slate-400">
-                </div>
-            </div>
-
-            <!-- Queue Dashboard -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
-                
-                <!-- Table Header -->
-                <div class="grid grid-cols-12 gap-4 px-8 py-4 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest sticky top-0 z-10 hidden md:grid">
-                    <div class="col-span-2">Time Slot</div>
-                    <div class="col-span-3">Patient</div>
-                    <div class="col-span-2">Provider</div>
-                    <div class="col-span-2">Status</div>
-                    <div class="col-span-1">Wait Time</div>
-                    <div class="col-span-2 text-right">Action</div>
-                </div>
-
-                <!-- Table Body -->
-                <div id="appointments-body" class="overflow-y-auto custom-scrollbar flex-1 p-2">
-                    <!-- Loading state -->
-                    <div class="flex flex-col items-center justify-center h-40 text-slate-400">
-                        <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-primary">sync</span>
-                        <p class="text-sm font-medium">Fetching active queue...</p>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Reschedule Modal -->
-    <div id="reschedule-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop fixed inset-0" onclick="closeRescheduleModal()"></div>
-        <div class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <!-- Modal Header -->
-            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div>
-                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule Appointment</h2>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1" id="reschedule-patient-name">Patient Name</p>
-                </div>
-                <button onclick="closeRescheduleModal()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Date Selector -->
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Dates</label>
-                        <select id="reschedule-date-select" onchange="renderModalSlots()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
-                            <option value="">Loading dates...</option>
-                        </select>
-                    </div>
-
-                    <!-- Slot Selector -->
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Slots</label>
-                        <div id="reschedule-slots-container" class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                            <div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for Rescheduling</label>
-                    <textarea id="reschedule-reason" rows="2" placeholder="e.g. Patient requested a later time" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="closeRescheduleModal()" class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
-                <button id="reschedule-confirm-btn" disabled onclick="submitReschedule()" class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
-                    Confirm Reschedule
-                </button>
+            <div class="bg-white px-6 py-4 rounded-3xl border border-slate-200 shadow-sm min-w-[180px]">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Scheduled</p>
+                <p class="text-3xl font-headline font-extrabold text-slate-800" id="kpi-total">0</p>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-20 opacity-0 z-50">
-        <span class="material-symbols-outlined text-secondary" id="toast-icon">info</span>
-        <p id="toast-message" class="font-medium text-sm">Message here</p>
+    <!-- Main Table Container -->
+    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
+        
+        <!-- Controls Bar -->
+        <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-widest" id="clock">00:00 AM</span>
+            </div>
+            <div class="relative w-80">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                <input type="text" id="searchInput" placeholder="Search patient or doctor..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Table Header -->
+        <div class="grid grid-cols-12 gap-4 px-10 py-4 bg-white border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] hidden md:grid">
+            <div class="col-span-2">Time Slot</div>
+            <div class="col-span-3">Patient Details</div>
+            <div class="col-span-2">Provider</div>
+            <div class="col-span-2">Status</div>
+            <div class="col-span-1 text-center">Wait Time</div>
+            <div class="col-span-2 text-right">Actions</div>
+        </div>
+
+        <!-- Table Body -->
+        <div id="appointments-body" class="overflow-y-auto custom-scrollbar flex-1 p-2">
+            <div class="flex flex-col items-center justify-center h-48 text-slate-400">
+                <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-primary">sync</span>
+                <p class="text-sm font-medium">Syncing live queue...</p>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        // State
-        let allAppointments = [];
-        let timerInterval = null;
-        let activeRescheduleAppt = null;
-        let rescheduleSlots = [];
-        let selectedSlot = null;
+{% endblock %}
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+{% block extra_js %}
+<script>
+    let allAppointments = [];
+
+    function calculateWaitTime(checkInIso) {
+        if (!checkInIso) return '-';
+        const checkInTime = new Date(checkInIso);
+        const diffMs = new Date() - checkInTime;
+        if (diffMs < 0) return '00:00';
+        const totalSecs = Math.floor(diffMs / 1000);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateWaitTimesUI() {
+        document.querySelectorAll('.wait-time-calc').forEach(el => {
+            const iso = el.getAttribute('data-time');
+            if(iso) {
+                const waitStr = calculateWaitTime(iso);
+                el.innerText = waitStr;
+                if (parseInt(waitStr.split(':')[0]) >= 20) el.classList.add('text-rose-500', 'font-extrabold');
             }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+        });
+    }
 
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
-            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
-        }
-
-        // --- Reschedule Logic ---
-        function openRescheduleModal(appt) {
-            activeRescheduleAppt = appt;
-            selectedSlot = null;
-            rescheduleSlots = [];
-            
-            document.getElementById('reschedule-patient-name').innerText = appt.patient_name;
-            document.getElementById('reschedule-date-select').innerHTML = '<option value="">Loading appointments...</option>';
-            document.getElementById('reschedule-slots-container').innerHTML = '<div class="col-span-full py-8 text-center"><span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
-            document.getElementById('reschedule-confirm-btn').disabled = true;
-            document.getElementById('reschedule-reason').value = 'Patient requested change';
-
-            document.getElementById('reschedule-modal').classList.remove('hidden');
-            
-            // Fetch availability for this doctor
-            fetch(`/api/doctors/${appt.doctor}/slots/`)
-                .then(res => res.json())
-                .then(slots => {
-                    rescheduleSlots = slots;
-                    const dateSelect = document.getElementById('reschedule-date-select');
-                    dateSelect.innerHTML = '<option value="">-- Choose Date --</option>';
-                    
-                    // Group unique dates
-                    const dates = [...new Set(slots.map(s => s.date))];
-                    if(dates.length === 0) {
-                        dateSelect.innerHTML = '<option value="">No slots found</option>';
-                    } else {
-                        dates.forEach(d => {
-                            const opt = document.createElement('option');
-                            opt.value = d;
-                            opt.innerText = new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-                            dateSelect.appendChild(opt);
-                        });
-                    }
-                    renderModalSlots();
-                });
-        }
-
-        function closeRescheduleModal() {
-            document.getElementById('reschedule-modal').classList.add('hidden');
-            activeRescheduleAppt = null;
-        }
-
-        function renderModalSlots() {
-            const date = document.getElementById('reschedule-date-select').value;
-            const container = document.getElementById('reschedule-slots-container');
-            container.innerHTML = '';
-            
-            if (!date) {
-                container.innerHTML = '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
-                return;
-            }
-
-            const filteredSlots = rescheduleSlots.filter(s => s.date === date);
-            if(filteredSlots.length === 0) {
-                container.innerHTML = '<p class="col-span-full text-center text-xs text-slate-400 py-4">No slots available for this date.</p>';
-                return;
-            }
-
-            filteredSlots.forEach(slot => {
-                const btn = document.createElement('button');
-                const t = slot.start_time.substring(0, 5);
-                btn.className = "py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all";
-                if (selectedSlot && selectedSlot.id === slot.id) {
-                    btn.classList.add('bg-primary', 'text-white', 'border-primary');
-                }
-                btn.innerText = t;
-                btn.onclick = () => {
-                    selectedSlot = slot;
-                    document.querySelectorAll('#reschedule-slots-container button').forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
-                    btn.classList.add('bg-primary', 'text-white', 'border-primary');
-                    document.getElementById('reschedule-confirm-btn').disabled = false;
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        function submitReschedule() {
-            if(!activeRescheduleAppt || !selectedSlot) return;
-            
-            const btn = document.getElementById('reschedule-confirm-btn');
-            btn.disabled = true;
-            btn.innerText = 'Processing...';
-            
-            fetch(`/appointments/${activeRescheduleAppt.id}/reschedule/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    new_date: selectedSlot.date,
-                    new_start_time: selectedSlot.start_time,
-                    new_end_time: selectedSlot.end_time,
-                    reason: document.getElementById('reschedule-reason').value
-                })
-            }).then(res => res.json()).then(data => {
-                if (data.error) {
-                    showToast(data.error, true);
-                    btn.disabled = false;
-                    btn.innerText = 'Confirm Reschedule';
-                } else {
-                    showToast("Appointment Rescheduled!");
-                    closeRescheduleModal();
-                    loadAppointments();
-                }
-            }).catch(err => {
-                showToast("Something went wrong", true);
-                btn.disabled = false;
-            });
-        }
-
-        // --- General UI Logic ---
-        function formatTime(timeStr) {
-            if (!timeStr) return '-';
-            return timeStr.substring(0, 5); // HH:MM
-        }
-        
-        function calculateWaitTime(checkInIso) {
-            if (!checkInIso) return '-';
-            const checkInTime = new Date(checkInIso);
-            const now = new Date();
-            const diffMs = now - checkInTime;
-            
-            if (diffMs < 0) return '00:00';
-            
-            const totalSeconds = Math.floor(diffMs / 1000);
-            const mins = Math.floor(totalSeconds / 60);
-            const secs = totalSeconds % 60;
-            
-            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        }
-        
-        function updateWaitTimesUI() {
-            document.querySelectorAll('.wait-time-calc').forEach(el => {
-                const iso = el.getAttribute('data-time');
-                if(iso) {
-                    const waitStr = calculateWaitTime(iso);
-                    el.innerText = waitStr;
-                    const mins = parseInt(waitStr);
-                    if (mins >= 20) el.classList.add('text-rose-500', 'font-extrabold');
-                }
-            });
-        }
-
-        function performAction(id, action) {
-            const appt = allAppointments.find(a => a.id === id);
-            
-            if (action === 'reschedule') {
-                openRescheduleModal(appt);
-                return;
-            }
-
-            fetch(`/appointments/${id}/${action}/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            }).then(res => res.json()).then(data => {
-                if (data.error) showToast(data.error, true);
-                else { showToast("Action Successful!"); loadAppointments(); }
-            }).catch(err => showToast("Network Error", true));
-        }
-
-        function renderAppointments() {
-            const tbody = document.getElementById('appointments-body');
-            const searchQ = document.getElementById('searchInput').value.toLowerCase();
-            
-            const filtered = allAppointments.filter(a => {
-                if (searchQ === '') return !['COMPLETED', 'NO_SHOW', 'CANCELLED'].includes(a.status);
-                const pName = (a.patient_name || '').toLowerCase();
-                const dName = (a.doctor_name || '').toLowerCase();
-                return pName.includes(searchQ) || dName.includes(searchQ);
-            });
-
-            filtered.sort((a, b) => {
-                if (a.status === 'CHECKED_IN' && b.status !== 'CHECKED_IN') return -1;
-                if (b.status === 'CHECKED_IN' && a.status !== 'CHECKED_IN') return 1;
-                return a.start_time.localeCompare(b.start_time);
-            });
-            
-            const waitingCount = filtered.filter(a => a.status === 'CHECKED_IN').length;
-            document.getElementById('kpi-waiting').innerText = waitingCount;
-            document.getElementById('kpi-total').innerText = allAppointments.length;
-
-            tbody.innerHTML = '';
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">done_all</span><p class="text-sm font-medium">Queue is empty or all matched are completed.</p></div>`;
-                return;
-            }
-            
-            filtered.forEach(appt => {
-                let actionBtnHtml = '';
-                let statusClass = 'status-requested';
-                let statusText = appt.status;
-                let waitTimeHtml = '<span class="text-slate-300">-</span>';
-                
-                if (appt.status === 'REQUESTED') {
-                    statusClass = 'status-requested';
-                    actionBtnHtml = `<button class="action-btn px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200" onclick="performAction(${appt.id}, 'confirm')">Confirm</button>`;
-                } 
-                else if (appt.status === 'CONFIRMED') {
-                    statusClass = 'status-confirmed';
-                    actionBtnHtml = `
-                        <button class="action-btn px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold shadow-md shadow-primary/20" onclick="performAction(${appt.id}, 'checkin')">Check In</button>
-                        <button class="action-btn px-3 py-2 text-rose-500 rounded-lg text-xs font-bold hover:bg-rose-50" onclick="performAction(${appt.id}, 'noshow')">No Show</button>
-                        <button class="action-btn px-3 py-2 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-50" onclick="performAction(${appt.id}, 'reschedule')">Reschedule</button>
-                    `;
-                }
-                else if (appt.status === 'CHECKED_IN') {
-                    statusClass = 'status-checked-in';
-                    statusText = 'In Waiting';
-                    waitTimeHtml = `<div class="flex items-center gap-1 font-bold"><span class="material-symbols-outlined text-[16px] text-amber-500">timer</span><span class="wait-time-calc text-slate-700" data-time="${appt.check_in_time}">${calculateWaitTime(appt.check_in_time)}</span></div>`;
-                    actionBtnHtml = `<button class="action-btn px-4 py-2 bg-secondary text-white rounded-lg text-xs font-bold shadow-md shadow-secondary/20" onclick="performAction(${appt.id}, 'complete')">✓ Complete</button>`;
-                }
-                
-                const tr = document.createElement('div');
-                tr.className = "grid grid-cols-1 md:grid-cols-12 gap-y-4 gap-x-4 px-6 md:px-8 py-5 border-b border-slate-100 hover:bg-slate-50/50 transition-colors items-center group";
-                tr.innerHTML = `
-                    <div class="col-span-2 flex flex-col max-md:hidden">
-                        <span class="text-sm font-bold text-slate-800">${formatTime(appt.start_time)}</span>
-                        <span class="text-xs font-semibold text-slate-400">to ${formatTime(appt.end_time)}</span>
-                    </div>
-                    <div class="col-span-3 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold font-headline select-none">${(appt.patient_name || '?')[0].toUpperCase()}</div>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-slate-800 line-clamp-1">${appt.patient_name}</span>
-                        </div>
-                    </div>
-                    <div class="col-span-2 flex flex-col">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Provider</span>
-                        <span class="text-sm font-semibold text-slate-700 line-clamp-1">${appt.doctor_name}</span>
-                    </div>
-                    <div class="col-span-2 flex items-center">
-                        <span class="status-pill ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="col-span-1 flex flex-col justify-center">${waitTimeHtml}</div>
-                    <div class="col-span-2 flex flex-wrap items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">${actionBtnHtml}</div>
-                `;
-                tbody.appendChild(tr);
-            });
-            updateWaitTimesUI();
-        }
-
-        function loadAppointments() {
-            fetch('/appointments/today/')
-                .then(res => res.json())
-                .then(data => { allAppointments = data; renderAppointments(); })
-                .catch(err => showToast("Sync Error", true));
-        }
-
-        setInterval(() => {
-            const d = new Date();
-            let hh = d.getHours();
-            let mm = d.getMinutes();
-            const ampm = hh >= 12 ? 'PM' : 'AM';
-            hh = hh % 12 || 12;
-            mm = mm < 10 ? '0'+mm : mm;
-            document.getElementById('clock').innerText = hh + ':' + mm + ' ' + ampm;
-        }, 1000);
-
-        document.getElementById('searchInput').addEventListener('input', renderAppointments);
-        window.onload = () => {
-            loadAppointments();
-            setInterval(loadAppointments, 30000);
-            setInterval(updateWaitTimesUI, 1000);
+    // Wrap the global submitReschedule function logic to load appointments after success
+    window.submitReschedule = (function(original) {
+        return function() {
+            original(loadAppointments);
         };
-    </script>
-</body>
-</html>
+    })(window.submitReschedule);
+
+    function performAction(id, action) {
+        if (action === 'reschedule') { 
+            openRescheduleModal(allAppointments.find(a => a.id === id)); 
+            return; 
+        }
+        fetch(`/appointments/${id}/${action}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+        }).then(res => res.json()).then(data => {
+            if (data.error) showToast(data.error, true);
+            else { showToast("Action Successful!"); loadAppointments(); }
+        });
+    }
+
+    function renderAppointments() {
+        const doc = document.getElementById('appointments-body');
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allAppointments.filter(a => {
+            if (q === '') return !['COMPLETED', 'NO_SHOW', 'CANCELLED'].includes(a.status);
+            return (a.patient_name || '').toLowerCase().includes(q) || (a.doctor_name || '').toLowerCase().includes(q);
+        }).sort((a,b) => (a.status === 'CHECKED_IN' ? -1 : 1) || a.start_time.localeCompare(b.start_time));
+        
+        document.getElementById('kpi-waiting').innerText = allAppointments.filter(a => a.status === 'CHECKED_IN').length;
+        document.getElementById('kpi-total').innerText = allAppointments.length;
+        doc.innerHTML = '';
+        if (filtered.length === 0) { doc.innerHTML = '<div class="flex flex-col items-center justify-center h-40 text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">done_all</span><p class="text-sm font-medium">No active appointments found.</p></div>'; return; }
+        
+        filtered.forEach(appt => {
+            let actions = '';
+            let sClass = 'status-requested', sText = appt.status, wait = '<span class="text-slate-300">-</span>';
+            if (appt.status === 'REQUESTED') {
+                actions = `<button class="action-btn px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200" onclick="performAction(${appt.id}, 'confirm')">Confirm</button>`;
+            } else if (appt.status === 'CONFIRMED') {
+                sClass = 'status-confirmed';
+                actions = `<button class="action-btn px-4 py-2 bg-primary text-white rounded-lg text-[10px] font-bold shadow-md shadow-primary/20" onclick="performAction(${appt.id}, 'checkin')">Check In</button>
+                           <button class="action-btn px-3 py-2 text-rose-500 text-[10px] font-bold" onclick="performAction(${appt.id}, 'noshow')">No Show</button>
+                           <button class="action-btn px-3 py-2 text-slate-500 text-[10px] font-bold" onclick="performAction(${appt.id}, 'reschedule')">Reschedule</button>`;
+            } else if (appt.status === 'CHECKED_IN') {
+                sClass = 'status-checked-in'; sText = 'In Waiting';
+                wait = `<div class="flex items-center gap-1 font-bold text-xs"><span class="material-symbols-outlined text-[14px] text-amber-500">timer</span><span class="wait-time-calc" data-time="${appt.check_in_time}">${calculateWaitTime(appt.check_in_time)}</span></div>`;
+                actions = `<button class="action-btn px-4 py-2 bg-secondary text-white rounded-lg text-[10px] font-bold" onclick="performAction(${appt.id}, 'complete')">✓ Complete</button>`;
+            }
+            const row = document.createElement('div');
+            row.className = "grid grid-cols-12 gap-4 px-10 py-5 border-b border-slate-50 items-center hover:bg-slate-50/50 transition-colors group";
+            row.innerHTML = `
+                <div class="col-span-2 text-sm font-bold text-slate-800">${appt.start_time.substring(0,5)} <span class="text-[10px] text-slate-400 font-medium">to ${appt.end_time.substring(0,5)}</span></div>
+                <div class="col-span-3 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs">${appt.patient_name[0]}</div>
+                    <span class="text-sm font-bold text-slate-700">${appt.patient_name}</span>
+                </div>
+                <div class="col-span-2 text-sm font-semibold text-slate-500">${appt.doctor_name}</div>
+                <div class="col-span-2"><span class="status-pill ${sClass}">${sText}</span></div>
+                <div class="col-span-1 flex justify-center">${wait}</div>
+                <div class="col-span-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">${actions}</div>`;
+            doc.appendChild(row);
+        });
+        updateWaitTimesUI();
+    }
+
+    function loadAppointments() {
+        fetch('/appointments/today/').then(res => res.json()).then(data => { allAppointments = data; renderAppointments(); });
+    }
+
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }, 1000);
+
+    document.getElementById('searchInput').addEventListener('input', renderAppointments);
+    window.onload = () => { loadAppointments(); setInterval(loadAppointments, 30000); setInterval(updateWaitTimesUI, 1000); };
+</script>
+{% endblock %}
