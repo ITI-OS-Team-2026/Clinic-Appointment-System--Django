@@ -3,6 +3,13 @@ from .models import AppointmentSlot
 from appointments.models import DoctorSchedule, ScheduleException
 
 def generate_slots_for_date(doctor, target_date: date):
+    # Idempotency: Clear existing unbooked slots first to avoid duplicates or orphans
+    AppointmentSlot.objects.filter(
+        doctor=doctor, 
+        date=target_date, 
+        status='AVAILABLE'
+    ).delete()
+
     try:
         exception = ScheduleException.objects.get(
             doctor=doctor, exception_date=target_date

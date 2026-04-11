@@ -56,6 +56,11 @@
                     <span class="text-[15px]">Daily Queue</span>
                 </a>
 
+                <a href="{% url 'doctor_monthly_planner' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/month-planner/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">calendar_view_month</span>
+                    <span class="text-[15px]">Monthly Planner</span>
+                </a>
+
                 <a href="{% url 'booking_requests' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/requests/' in request.path %}active{% endif %}">
                     <span class="material-symbols-outlined text-[22px]">notification_important</span>
                     <span class="text-[15px]">Booking Requests</span>
@@ -128,21 +133,132 @@
 
     </div>
 
-    <!-- Toast Component -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-20 opacity-0 z-[100]">
-        <span class="material-symbols-outlined text-secondary" id="toast-icon">check_circle</span>
-        <p id="toast-message" class="font-medium text-sm">Action successful!</p>
+    <!-- Premium Toast / Notification System -->
+    <div id="toast-container" class="fixed top-8 right-8 z-[100] flex flex-col gap-4 pointer-events-none">
+        <!-- Toasts will be injected here -->
     </div>
 
+    <template id="toast-template">
+        <div class="toast-item pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-slate-200/50 px-6 py-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] min-w-[320px] max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+            <div class="toast-icon-wrapper w-10 h-10 rounded-2xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]"></span>
+            </div>
+            <div class="flex-1">
+                <p class="toast-message font-bold text-slate-900 text-sm leading-tight"></p>
+                <p class="toast-subtext text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">System Notification</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-500 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </template>
+
+    <!-- Global Premium Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-[2.5rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md animate-in zoom-in-95 duration-300">
+                    <div class="bg-white px-8 pt-10 pb-8">
+                        <div class="flex flex-col items-center">
+                            <div class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 mb-6">
+                                <span class="material-symbols-outlined text-[32px]">help_center</span>
+                            </div>
+                            <div class="text-center">
+                                <h3 class="text-xl font-headline font-black text-slate-900" id="confirm-title">Are you sure?</h3>
+                                <div class="mt-3">
+                                    <p class="text-sm text-slate-500 font-medium leading-relaxed" id="confirm-message">This action cannot be undone.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-8 py-6 flex gap-3">
+                        <button type="button" id="confirm-cancel" class="flex-1 px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-all uppercase tracking-widest">
+                            Cancel
+                        </button>
+                        <button type="button" id="confirm-proceed" class="flex-1 px-6 py-3.5 bg-rose-600 rounded-2xl text-sm font-bold text-white hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all uppercase tracking-widest">
+                            Proceed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast / Notification System -->
+    ... (script content continues) ...
     <script>
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
-            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const template = document.getElementById('toast-template');
+            if(!container || !template) return;
+            const clone = template.content.cloneNode(true);
+            const item = clone.querySelector('.toast-item');
+            const iconWrapper = clone.querySelector('.toast-icon-wrapper');
+            const icon = clone.querySelector('.material-symbols-outlined');
+            const message = clone.querySelector('.toast-message');
+
+            message.innerText = msg;
+            
+            if (type === 'error') {
+                icon.innerText = 'error';
+                iconWrapper.classList.add('bg-rose-50', 'text-rose-500');
+            } else if (type === 'warning') {
+                icon.innerText = 'warning';
+                iconWrapper.classList.add('bg-amber-50', 'text-amber-500');
+            } else {
+                icon.innerText = 'check_circle';
+                iconWrapper.classList.add('bg-emerald-50', 'text-emerald-500');
+            }
+
+            container.appendChild(clone);
+
+            const elements = container.children;
+            const lastAdded = elements[elements.length - 1];
+            setTimeout(() => {
+                if (lastAdded) {
+                    lastAdded.classList.add('opacity-0', 'translate-x-10');
+                    lastAdded.style.transition = 'all 0.5s ease';
+                    setTimeout(() => lastAdded.remove(), 500);
+                }
+            }, 5000);
         }
+
+        // Global Confirmation Logic
+        window.confirmAction = function(options) {
+            const modal = document.getElementById('confirm-modal');
+            const title = document.getElementById('confirm-title');
+            const message = document.getElementById('confirm-message');
+            const proceedBtn = document.getElementById('confirm-proceed');
+            const cancelBtn = document.getElementById('confirm-cancel');
+
+            title.innerText = options.title || 'Are you sure?';
+            message.innerText = options.message || 'This action cannot be undone.';
+            proceedBtn.innerText = options.proceedText || 'Proceed';
+            proceedBtn.className = `flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-all uppercase tracking-widest ${options.type === 'danger' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200' : 'bg-primary hover:bg-primary/90 shadow-primary/20'}`;
+
+            modal.classList.remove('hidden');
+
+            return new Promise((resolve) => {
+                proceedBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(true);
+                };
+                cancelBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(false);
+                };
+            });
+        };
+
+        // Auto-handle Django Messages
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+        });
 
         const getCookie = (name) => {
             let cookieValue = null;

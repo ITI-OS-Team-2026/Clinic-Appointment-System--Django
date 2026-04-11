@@ -116,8 +116,8 @@
                                     <div class="flex items-center justify-between mb-8">
                                         <h3 id="calendar-header" class="text-xl font-headline font-extrabold text-slate-800 capitalize">-</h3>
                                         <div class="flex gap-2">
-                                            <button class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
-                                            <button class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+                                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+                                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-7 gap-y-2 gap-x-2 text-center" id="calendar-days">
@@ -224,7 +224,8 @@
             doctorName: null,
             date: null,
             startTime: null,
-            availableSlots: [] 
+            availableSlots: [],
+            calendarDate: new Date()
         };
 
         function getCookie(name) {
@@ -331,6 +332,8 @@
 
         function renderCalendar() {
             const calDays = document.getElementById('calendar-days');
+            const viewYear = state.calendarDate.getFullYear();
+            const viewMonth = state.calendarDate.getMonth();
 
             const headersHtml = `
                 <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Sun</div>
@@ -343,18 +346,21 @@
             `;
 
             let daysHtml = '';
+            
+            document.getElementById('calendar-header').innerText = state.calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
+            const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
             const today = new Date();
-            document.getElementById('calendar-header').innerText = today.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
-            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            today.setHours(0,0,0,0);
 
             for (let i = 0; i < firstDay; i++) { daysHtml += `<div></div>`; }
 
             for (let d = 1; d <= daysInMonth; d++) {
-                const ds = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+                const dayDate = new Date(viewYear, viewMonth, d);
+                const ds = viewYear + "-" + String(viewMonth + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
                 const hasSlots = state.availableSlots.some(s => s.date === ds);
+                const isPast = dayDate < today;
 
                 if (hasSlots) {
                     daysHtml += `<div class="calendar-day p-2 text-sm text-slate-700 font-bold cursor-pointer relative" onclick="selectDate('${ds}', this)">
@@ -362,12 +368,16 @@
                         <div class="absolute bottom-1 w-1 h-1 rounded-full bg-secondary"></div>
                     </div>`;
                 } else {
-                    const isPast = d < today.getDate();
-                    daysHtml += `<div class="calendar-day p-2 text-sm text-slate-300 opacity-50 font-medium">${d}</div>`;
+                    daysHtml += `<div class="calendar-day p-2 text-sm ${isPast ? 'text-slate-200 opacity-30' : 'text-slate-300 opacity-60'} font-medium">${d}</div>`;
                 }
             }
 
             calDays.innerHTML = headersHtml + daysHtml;
+        }
+
+        function changeMonth(delta) {
+            state.calendarDate.setMonth(state.calendarDate.getMonth() + delta);
+            renderCalendar();
         }
 
         function selectDate(isoDate, el) {
