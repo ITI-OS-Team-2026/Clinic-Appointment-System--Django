@@ -1,9 +1,14 @@
 from django.urls import path
-from .views.doctor_views import doctor_queue
+from .views.doctor_views import doctor_queue, booking_requests, appointment_diagnosis, doctor_schedule, doctor_profile
 from .views.receptionist_views import receptionist_queue, appointment_management
 
 urlpatterns = [
     path('doctor/queue/', doctor_queue, name='doctor_queue'),
+    path('doctor/requests/', booking_requests, name='booking_requests'),
+    path('doctor/appointment/<int:appointment_id>/diagnosis/', appointment_diagnosis, name='appointment_diagnosis'),
+    path('doctor/schedule/', doctor_schedule, name='doctor_schedule'),
+    path('doctor/profile/', doctor_profile, name='doctor_profile'),
+    
     path('receptionist/queue/', receptionist_queue, name='receptionist_queue'),
     path('receptionist/management/', appointment_management, name='receptionist_management'),
-]
+]
