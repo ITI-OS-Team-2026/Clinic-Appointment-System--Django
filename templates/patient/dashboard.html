@@ -74,11 +74,16 @@
                             <span
                                 class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{{appt.status}}</span>
                         </td>
-                        <td class="p-4 text-right">
+                        <td class="p-4 text-right whitespace-nowrap">
                             {% if appt.status == 'REQUESTED' or appt.status == 'CONFIRMED' %}
+                            <button onclick="openRescheduleModal('{{ appt.id }}', '{{ appt.doctor.id }}')"
+                                class="text-xs text-primary hover:text-cyan-700 font-medium py-1 px-3 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors inline-block mr-2">
+                                Reschedule
+                            </button>
                             <form method="POST" action="{% url 'cancel-appointment' appt.id %}" class="inline-block">
                                 {% csrf_token %}
-                                <button type="submit" class="text-xs text-rose-500 hover:text-rose-700 font-medium py-1 px-3 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
+                                <button type="submit"
+                                    class="text-xs text-rose-500 hover:text-rose-700 font-medium py-1 px-3 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
                                     Cancel
                                 </button>
                             </form>
@@ -123,4 +128,127 @@
 
     </div>
 </main>
+
+<!-- Reschedule Modal -->
+<div id="reschedule-modal"
+    class="fixed inset-0 z-[100] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRescheduleModal()"></div>
+    <div
+        class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <form id="reschedule-form" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="new_start_time" id="reschedule-new-start">
+
+            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule
+                        Appointment</h2>
+                </div>
+                <button type="button" onclick="closeRescheduleModal()"
+                    class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
+                            Dates</label>
+                        <select id="reschedule-date-select" name="new_date" onchange="renderModalSlots()"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">Loading dates...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
+                            Slots</label>
+                        <div id="reschedule-slots-container"
+                            class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div
+                                class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for
+                        Rescheduling</label>
+                    <textarea name="reason" id="reschedule-reason" rows="2"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+            </div>
+            <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button type="button" onclick="closeRescheduleModal()"
+                    class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                <button id="reschedule-confirm-btn" type="submit" disabled
+                    class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">Confirm
+                    Reschedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let rescheduleSlots = [];
+
+    function openRescheduleModal(apptId, doctorId) {
+        document.getElementById('reschedule-modal').classList.remove('hidden');
+        document.getElementById('reschedule-form').action = `/appointments/patient/${apptId}/reschedule/`;
+        document.getElementById('reschedule-date-select').innerHTML = '<option value="">Loading dates...</option>';
+        document.getElementById('reschedule-slots-container').innerHTML = '<div class="col-span-full py-8 text-center text-slate-400 font-bold"><span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
+        document.getElementById('reschedule-confirm-btn').disabled = true;
+
+        fetch(`/api/doctors/${doctorId}/slots/`)
+            .then(res => res.json())
+            .then(slots => {
+                rescheduleSlots = slots;
+                const ds = document.getElementById('reschedule-date-select');
+                ds.innerHTML = '<option value="">-- Choose Date --</option>';
+                const dates = [...new Set(slots.map(s => s.date))];
+                dates.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.innerText = new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    ds.appendChild(opt);
+                });
+                renderModalSlots();
+            });
+    }
+
+    function closeRescheduleModal() {
+        document.getElementById('reschedule-modal').classList.add('hidden');
+    }
+
+    function renderModalSlots() {
+        const date = document.getElementById('reschedule-date-select').value;
+        const container = document.getElementById('reschedule-slots-container');
+        container.innerHTML = '';
+
+        if (!date) {
+            container.innerHTML = '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
+            return;
+        }
+
+        const filtered = rescheduleSlots.filter(s => s.date === date);
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="col-span-full py-8 text-center"><p class="text-xs text-slate-400">No slots available for this date</p></div>';
+            return;
+        }
+
+        filtered.forEach(slot => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = "py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all";
+            btn.innerText = slot.start_time.substring(0, 5);
+            btn.onclick = () => {
+                document.querySelectorAll('#reschedule-slots-container button').forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
+                btn.classList.add('bg-primary', 'text-white', 'border-primary');
+                document.getElementById('reschedule-new-start').value = slot.start_time;
+                document.getElementById('reschedule-confirm-btn').disabled = false;
+            };
+            container.appendChild(btn);
+        });
+    }
+</script>
 {% endblock %}
