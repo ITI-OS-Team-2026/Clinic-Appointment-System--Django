@@ -1,113 +1,115 @@
 {% extends 'patient/base_patient.html' %}
 {% block content %}
-    <nav class="bg-white shadow border-b py-4">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
-                <h1 class="font-heading font-bold text-xl">Clinic</h1>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <span>{{ profile.user.first_name }} {{ profile.user.last_name }}</span>
-                <a href="/users/logout/" class="text-sm text-red-500 font-medium">Logout</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-heading font-bold">Dashboard</h2>
-            <a href="/appointments/patient/book/" class="bg-primary hover:bg-cyan-700 text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm">add</span> 
-                Book Appointment
-            </a>
+<nav class="bg-white shadow border-b py-4">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
+            <h1 class="font-heading font-bold text-xl">Clinic</h1>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
-            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-                <p class="text-sm text-gray-500 mb-1">Total</p>
-                <p class="text-3xl font-heading font-bold">{{ total }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-                <p class="text-sm text-gray-500 mb-1">Upcoming</p>
-                <!-- might need to fix later if 0 -->
-                <p class="text-3xl font-heading font-bold text-primary">{{ upcoming|length }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-                <p class="text-sm text-gray-500 mb-1">Completed</p>
-                <p class="text-3xl font-heading font-bold text-green-600">{{ completed_count }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-                <p class="text-sm text-gray-500 mb-1">Cancelled</p>
-                <p class="text-3xl font-heading font-bold text-red-500">{{ cancelled_count }}</p>
-            </div>
+        <div class="flex items-center gap-4">
+            <span>{{ profile.user.first_name }} {{ profile.user.last_name }}</span>
+            <a href="/users/logout/" class="text-sm text-red-500 font-medium">Logout</a>
         </div>
+    </div>
+</nav>
 
-        <div class="mb-10">
-            <h3 class="text-xl font-heading font-bold mb-4">Upcoming Appointments</h3>
-            
-            {% if upcoming %}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 text-sm text-gray-500 font-medium">Date & Time</th>
-                                <th class="p-4 text-sm text-gray-500 font-medium">Doctor</th>
-                                <th class="p-4 text-sm text-gray-500 font-medium">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            {% for appt in upcoming %}
-                            <tr>
-                                <td class="p-4">
-                                    <div class="font-medium">{{ appt.date }}</div>
-                                    <div class="text-sm text-gray-500">{{ appt.time }}</div>
-                                </td>
-                                <td class="p-4">
-                                    <div class="font-medium">Dr. {{ appt.doctor.user.last_name }}</div>
-                                    <!-- show specialty here later? -->
-                                </td>
-                                <td class="p-4">
-                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{{ appt.status }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
-                    <p class="text-gray-500 mb-3">No upcoming appointments.</p>
-                </div>
-            {% endif %}
-            
+<main class="max-w-7xl mx-auto px-4 py-8">
+
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-heading font-bold">Dashboard</h2>
+        <a href="/appointments/patient/book/"
+            class="bg-primary hover:bg-cyan-700 text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Book Appointment
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Total</p>
+            <p class="text-3xl font-heading font-bold">{{ total }}</p>
         </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Upcoming</p>
+            <!-- might need to fix later if 0 -->
+            <p class="text-3xl font-heading font-bold text-primary">{{ upcoming|length }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Completed</p>
+            <p class="text-3xl font-heading font-bold text-green-600">{{ completed_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Cancelled</p>
+            <p class="text-3xl font-heading font-bold text-red-500">{{ cancelled_count }}</p>
+        </div>
+    </div>
 
-        <div>
-            <h3 class="text-xl font-heading font-bold mb-4">Past Appointments</h3>
-            
-            {% if past %}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {% for appt in past %}
-                    <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100">
-                        <div class="flex justify-between mb-2">
-                            <div class="font-medium">{{ appt.date }}</div>
-                            <div class="text-xs font-semibold px-2 py-1 rounded-full 
+    <div class="mb-10">
+        <h3 class="text-xl font-heading font-bold mb-4">Upcoming Appointments</h3>
+
+        {% if upcoming %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Date & Time</th>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Doctor</th>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    {% for appt in upcoming %}
+                    <tr>
+                        <td class="p-4">
+                            <div class="font-medium">{{ appt.appointment_date }}</div>
+                            <div class="text-sm text-gray-500">{{ appt.start_time }}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-medium">Dr. {{ appt.doctor.get_full_name }}</div>
+                            <!-- show specialty here later? -->
+                        </td>
+                        <td class="p-4">
+                            <span
+                                class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{{appt.status}}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
+            <p class="text-gray-500 mb-3">No upcoming appointments.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div>
+        <h3 class="text-xl font-heading font-bold mb-4">Past Appointments</h3>
+
+        {% if past %}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {% for appt in past %}
+            <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100">
+                <div class="flex justify-between mb-2">
+                    <div class="font-medium">{{ appt.appointment_date }}</div>
+                    <div class="text-xs font-semibold px-2 py-1 rounded-full 
                                 {% if appt.status == 'COMPLETED' %}bg-green-100 text-green-800
                                 {% elif appt.status == 'CANCELLED' %}bg-red-100 text-red-800
                                 {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                {{ appt.status }}
-                            </div>
-                        </div>
-                        <div class="text-sm text-gray-500">{{ appt.time }} • Dr. {{ appt.doctor.user.last_name }}</div>
+                        {{ appt.status }}
                     </div>
-                    {% endfor %}
                 </div>
-            {% else %}
-                 <p class="text-gray-500">No past appointments.</p>
-            {% endif %}
-            
+                <div class="text-sm text-gray-500">{{ appt.start_time }} • Dr. {{ appt.doctor.get_full_name }}</div>
+            </div>
+            {% endfor %}
         </div>
-    </main>
+        {% else %}
+        <p class="text-gray-500">No past appointments.</p>
+        {% endif %}
+
+    </div>
+</main>
 {% endblock %}
