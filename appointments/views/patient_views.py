@@ -1,9 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from users.decorators import is_patient
 from appointments.models import Appointment
 from users.models import PatientProfile
-
 
 @user_passes_test(is_patient, login_url='/users/login/')
 def patient_dashboard(request):
@@ -22,6 +21,15 @@ def patient_dashboard(request):
         'cancelled_count': past.filter(status='CANCELLED').count()
     }
     return render(request, 'patient/dashboard.html', context)
+
+@user_passes_test(is_patient, login_url='/users/login/')
+def cancel_appointment(request, appointment_id):
+    if request.method == 'POST':
+        appt = get_object_or_404(Appointment, id=appointment_id)
+        if appt.patient == request.user and appt.status in ['REQUESTED', 'CONFIRMED']:
+            appt.status = 'CANCELLED'
+            appt.save()
+    return redirect('patient_dashboard')
 
 
 @user_passes_test(is_patient, login_url='/users/login/')
