@@ -108,7 +108,7 @@
         {% if past %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {% for appt in past %}
-            <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100">
+            <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100 flex flex-col">
                 <div class="flex justify-between mb-2">
                     <div class="font-medium">{{ appt.appointment_date }}</div>
                     <div class="text-xs font-semibold px-2 py-1 rounded-full 
@@ -118,7 +118,15 @@
                         {{ appt.status }}
                     </div>
                 </div>
-                <div class="text-sm text-gray-500">{{ appt.start_time }} • Dr. {{ appt.doctor.get_full_name }}</div>
+                <div class="text-sm text-gray-500 mb-4">{{ appt.start_time }} • Dr. {{ appt.doctor.get_full_name }}</div>
+                
+                {% if appt.status == 'COMPLETED' %}
+                <div class="border-t border-gray-100 pt-3 mt-auto">
+                    <a href="{% url 'patient_consultation_summary' appt.id %}" class="w-full text-center py-2 bg-slate-50 hover:bg-primary hover:text-white text-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1">
+                        View Summary
+                    </a>
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
