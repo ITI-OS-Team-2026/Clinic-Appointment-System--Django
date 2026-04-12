@@ -1,0 +1,209 @@
+{% extends 'doctor/base_doctor.html' %}
+
+{% block title %}Consultation | Aura Health{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-input-clean {
+        @apply w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8 pb-20">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+        <a href="{% url 'doctor_queue' %}" class="hover:text-primary transition-colors">Daily Queue</a>
+        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        <span class="text-slate-900">Diagnosis & Prescription</span>
+    </nav>
+
+    <!-- Patient Highlight Header -->
+    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div class="relative flex items-center gap-6">
+            <div class="w-20 h-20 rounded-[2rem] bg-primary flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-primary/30">
+                {{ appointment.patient.username|slice:":1" }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</h1>
+                <div class="flex flex-wrap items-center gap-4 mt-2">
+                    <span class="flex items-center gap-1.5 text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-[18px]">cake</span>
+                        {{ appointment.patient.patient_profile.date_of_birth|default:"N/A" }}
+                    </span>
+                    <span class="flex items-center gap-1.5 text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-[18px]">water_drop</span>
+                        Blood: {{ appointment.patient.patient_profile.blood_type|default:"N/A" }}
+                    </span>
+                    <span class="flex items-center gap-1.5 text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-[18px]">tag</span>
+                        ID: #P-{{ appointment.patient.id|add:"1000" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="relative text-right">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Session Date</p>
+            <p class="text-lg font-headline font-extrabold text-slate-900">{{ appointment.appointment_date|date:"F j, Y" }}</p>
+            <p class="text-sm font-bold text-primary">{{ appointment.start_time|time:"H:i" }} session</p>
+        </div>
+    </div>
+
+    <form id="consultation-form" method="POST" class="space-y-8">
+        {% csrf_token %}
+        <input type="hidden" id="prescriptions_data" name="prescriptions_data" value="[]">
+
+        <!-- Diagnosis & Notes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-xl">diagnosis</span>
+                    <h3 class="font-headline font-extrabold text-slate-900">Diagnosis</h3>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-1">Main Diagnosis</label>
+                    <textarea name="diagnosis" rows="4" required placeholder="Describe the primary medical condition..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-1">Requested Tests/Labs</label>
+                    <textarea name="requested_tests" rows="2" placeholder="List any labs, x-rays, or specialized tests..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined text-secondary bg-secondary/10 p-2 rounded-xl">sticky_note_2</span>
+                    <h3 class="font-headline font-extrabold text-slate-900">Clinical Notes</h3>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-1">Observation Notes</label>
+                    <textarea name="notes" rows="9" required placeholder="Additional observations, symptoms details, or follow-up instructions..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescription Section -->
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-indigo-500 bg-indigo-50 p-2 rounded-xl">medication</span>
+                    <h3 class="font-headline font-extrabold text-slate-900">Medical Prescription</h3>
+                </div>
+                <button type="button" onclick="addMedicationRow()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Add Medication
+                </button>
+            </div>
+
+            <div class="overflow-hidden border border-slate-100 rounded-2xl">
+                <table class="w-full text-left border-collapse" id="meds-table">
+                    <thead>
+                        <tr class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            <th class="px-6 py-4">Drug Name</th>
+                            <th class="px-6 py-4">Dosage (e.g. 500mg)</th>
+                            <th class="px-6 py-4">Schedule/Duration</th>
+                            <th class="px-6 py-4 w-12 text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <!-- Dynamic rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="no-meds-msg" class="py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <p class="text-xs font-bold text-slate-400 uppercase">No medications added yet</p>
+            </div>
+        </div>
+
+        <!-- Submission Buttons -->
+        <div class="flex items-center justify-end gap-4">
+            <a href="{% url 'doctor_queue' %}" class="px-8 py-4 text-slate-500 font-bold text-sm hover:text-slate-900 transition-colors">Discard Draft</a>
+            <button type="submit" class="px-12 py-4 bg-primary text-white font-bold text-sm rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                <span class="material-symbols-outlined text-[20px]">save</span>
+                Finalize Consultation
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let medications = [];
+
+    function renderMeds() {
+        const tbody = document.querySelector('#meds-table tbody');
+        const emptyMsg = document.getElementById('no-meds-msg');
+        tbody.innerHTML = '';
+        
+        if (medications.length === 0) {
+            emptyMsg.classList.remove('hidden');
+            return;
+        } else {
+            emptyMsg.classList.add('hidden');
+        }
+
+        medications.forEach((med, index) => {
+            const tr = document.createElement('tr');
+            tr.className = "group hover:bg-slate-50/50 transition-colors";
+            tr.innerHTML = `
+                <td class="px-6 py-4">
+                    <input type="text" value="${med.drug_name}" 
+                        onchange="updateMed(${index}, 'drug_name', this.value)" 
+                        class="w-full bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 p-0" 
+                        placeholder="Type medication name...">
+                </td>
+                <td class="px-6 py-4">
+                    <input type="text" value="${med.dose}" 
+                        onchange="updateMed(${index}, 'dose', this.value)" 
+                        class="w-full bg-transparent border-none text-sm font-medium text-slate-600 focus:ring-0 p-0" 
+                        placeholder="e.g. 1 pill twice daily">
+                </td>
+                <td class="px-6 py-4">
+                    <input type="text" value="${med.duration}" 
+                        onchange="updateMed(${index}, 'duration', this.value)" 
+                        class="w-full bg-transparent border-none text-sm font-medium text-slate-600 focus:ring-0 p-0" 
+                        placeholder="e.g. For 7 days">
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button type="button" onclick="removeMed(${index})" class="p-2 text-slate-300 hover:text-rose-500 transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        // Sync with hidden field
+        document.getElementById('prescriptions_data').value = JSON.stringify(medications);
+    }
+
+    function addMedicationRow() {
+        medications.push({ drug_name: '', dose: '', duration: '' });
+        renderMeds();
+    }
+
+    function updateMed(index, field, value) {
+        medications[index][field] = value;
+        document.getElementById('prescriptions_data').value = JSON.stringify(medications);
+    }
+
+    function removeMed(index) {
+        medications.splice(index, 1);
+        renderMeds();
+    }
+
+    // Initial render
+    renderMeds();
+
+    // Form submission validation
+    document.getElementById('consultation-form').onsubmit = function(e) {
+        // You could add validation here if needed
+        console.log("Submitting with meds:", medications);
+        return true;
+    };
+</script>
+{% endblock %}
