@@ -148,8 +148,8 @@
                             class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
                             {{ request.user.username|make_list|first|upper }}
                         </div>
-                        <span class="text-sm font-semibold text-slate-700 hidden sm:block">{{ request.user.username
-                            }}</span>
+                        <span class="text-sm font-semibold text-slate-700 hidden sm:block">
+                            {{request.user.username}}</span>
                     </div>
                     <a href="/users/logout/"
                         class="text-sm font-bold text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-3 py-2 rounded-lg">Logout</a>

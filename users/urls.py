@@ -7,12 +7,13 @@ from django.contrib.auth.views import (
 )
 
 from users.views.admin_views import add_doctor, add_receptionist, admin_dashboard, analytics, export_analytics_csv
-from .views.auth_views import login_view, logout_view, patient_register, forget_password
+from .views.auth_views import login_view, logout_view, patient_register, forget_password, patient_profile
 
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', patient_register, name='register'),
+    path('patient/profile/', patient_profile, name='patient_profile'),
     path('forget-password/', PasswordResetView.as_view(template_name='auth/forget_password.html'), name='password_reset'),
     path('forget-password/done/', PasswordResetDoneView.as_view(template_name='auth/password_reset_done.html'), name='password_reset_done'),
     path('forget-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='auth/password_reset_confirm.html'), name='password_reset_confirm'),
