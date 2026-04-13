@@ -16,6 +16,7 @@ class DoctorListAPIView(APIView):
                 'id': doc.user.id,
                 'full_name': f"Dr. {doc.user.get_full_name() or doc.user.username}",
                 'specialization': doc.specialization,
+                'experience_years': doc.experience_years,
             })
         return Response(data)
 

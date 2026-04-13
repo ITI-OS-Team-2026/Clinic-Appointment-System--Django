@@ -1,0 +1,262 @@
+{% extends 'patient/base_patient.html' %}
+{% block content %}
+<nav class="bg-white shadow border-b py-4">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
+            <h1 class="font-heading font-bold text-xl">Clinic</h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <span>{{ profile.user.first_name }} {{ profile.user.last_name }}</span>
+            <a href="/users/logout/" class="text-sm text-red-500 font-medium">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-heading font-bold">Dashboard</h2>
+        <a href="/appointments/patient/book/"
+            class="bg-primary hover:bg-cyan-700 text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Book Appointment
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Total</p>
+            <p class="text-3xl font-heading font-bold">{{ total }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Upcoming</p>
+            <!-- might need to fix later if 0 -->
+            <p class="text-3xl font-heading font-bold text-primary">{{ upcoming|length }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Completed</p>
+            <p class="text-3xl font-heading font-bold text-green-600">{{ completed_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">Cancelled</p>
+            <p class="text-3xl font-heading font-bold text-red-500">{{ cancelled_count }}</p>
+        </div>
+    </div>
+
+    <div class="mb-10">
+        <h3 class="text-xl font-heading font-bold mb-4">Upcoming Appointments</h3>
+
+        {% if upcoming %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Date & Time</th>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Doctor</th>
+                        <th class="p-4 text-sm text-gray-500 font-medium">Status</th>
+                        <th class="p-4 text-sm text-gray-500 font-medium text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    {% for appt in upcoming %}
+                    <tr>
+                        <td class="p-4">
+                            <div class="font-medium">{{ appt.appointment_date }}</div>
+                            <div class="text-sm text-gray-500">{{ appt.start_time }}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-medium">Dr. {{ appt.doctor.get_full_name }}</div>
+                            <!-- show specialty here later? -->
+                        </td>
+                        <td class="p-4">
+                            <span
+                                class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{{appt.status}}</span>
+                        </td>
+                        <td class="p-4 text-right whitespace-nowrap">
+                            {% if appt.status == 'REQUESTED' or appt.status == 'CONFIRMED' %}
+                            <button onclick="openRescheduleModal('{{ appt.id }}', '{{ appt.doctor.id }}')"
+                                class="text-xs text-primary hover:text-cyan-700 font-medium py-1 px-3 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors inline-block mr-2">
+                                Reschedule
+                            </button>
+                            <form method="POST" action="{% url 'cancel-appointment' appt.id %}" class="inline-block">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="text-xs text-rose-500 hover:text-rose-700 font-medium py-1 px-3 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
+                                    Cancel
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
+            <p class="text-gray-500 mb-3">No upcoming appointments.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div>
+        <h3 class="text-xl font-heading font-bold mb-4">Past Appointments</h3>
+
+        {% if past %}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {% for appt in past %}
+            <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100 flex flex-col">
+                <div class="flex justify-between mb-2">
+                    <div class="font-medium">{{ appt.appointment_date }}</div>
+                    <div class="text-xs font-semibold px-2 py-1 rounded-full 
+                                {% if appt.status == 'COMPLETED' %}bg-green-100 text-green-800
+                                {% elif appt.status == 'CANCELLED' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ appt.status }}
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500 mb-4">{{ appt.start_time }} • Dr. {{ appt.doctor.get_full_name }}</div>
+                
+                {% if appt.status == 'COMPLETED' %}
+                <div class="border-t border-gray-100 pt-3 mt-auto">
+                    <a href="{% url 'patient_consultation_summary' appt.id %}" class="w-full text-center py-2 bg-slate-50 hover:bg-primary hover:text-white text-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1">
+                        View Summary
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No past appointments.</p>
+        {% endif %}
+
+    </div>
+</main>
+
+<!-- Reschedule Modal -->
+<div id="reschedule-modal"
+    class="fixed inset-0 z-[100] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRescheduleModal()"></div>
+    <div
+        class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <form id="reschedule-form" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="new_start_time" id="reschedule-new-start">
+
+            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule
+                        Appointment</h2>
+                </div>
+                <button type="button" onclick="closeRescheduleModal()"
+                    class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
+                            Dates</label>
+                        <select id="reschedule-date-select" name="new_date" onchange="renderModalSlots()"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">Loading dates...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
+                            Slots</label>
+                        <div id="reschedule-slots-container"
+                            class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div
+                                class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for
+                        Rescheduling</label>
+                    <textarea name="reason" id="reschedule-reason" rows="2"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                </div>
+            </div>
+            <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button type="button" onclick="closeRescheduleModal()"
+                    class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                <button id="reschedule-confirm-btn" type="submit" disabled
+                    class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">Confirm
+                    Reschedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let rescheduleSlots = [];
+
+    function openRescheduleModal(apptId, doctorId) {
+        document.getElementById('reschedule-modal').classList.remove('hidden');
+        document.getElementById('reschedule-form').action = `/appointments/patient/${apptId}/reschedule/`;
+        document.getElementById('reschedule-date-select').innerHTML = '<option value="">Loading dates...</option>';
+        document.getElementById('reschedule-slots-container').innerHTML = '<div class="col-span-full py-8 text-center text-slate-400 font-bold"><span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
+        document.getElementById('reschedule-confirm-btn').disabled = true;
+
+        fetch(`/api/doctors/${doctorId}/slots/`)
+            .then(res => res.json())
+            .then(slots => {
+                rescheduleSlots = slots;
+                const ds = document.getElementById('reschedule-date-select');
+                ds.innerHTML = '<option value="">-- Choose Date --</option>';
+                const dates = [...new Set(slots.map(s => s.date))];
+                dates.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.innerText = new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    ds.appendChild(opt);
+                });
+                renderModalSlots();
+            });
+    }
+
+    function closeRescheduleModal() {
+        document.getElementById('reschedule-modal').classList.add('hidden');
+    }
+
+    function renderModalSlots() {
+        const date = document.getElementById('reschedule-date-select').value;
+        const container = document.getElementById('reschedule-slots-container');
+        container.innerHTML = '';
+
+        if (!date) {
+            container.innerHTML = '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
+            return;
+        }
+
+        const filtered = rescheduleSlots.filter(s => s.date === date);
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="col-span-full py-8 text-center"><p class="text-xs text-slate-400">No slots available for this date</p></div>';
+            return;
+        }
+
+        filtered.forEach(slot => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = "py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all";
+            btn.innerText = slot.start_time.substring(0, 5);
+            btn.onclick = () => {
+                document.querySelectorAll('#reschedule-slots-container button').forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
+                btn.classList.add('bg-primary', 'text-white', 'border-primary');
+                document.getElementById('reschedule-new-start').value = slot.start_time;
+                document.getElementById('reschedule-confirm-btn').disabled = false;
+            };
+            container.appendChild(btn);
+        });
+    }
+</script>
+{% endblock %}
