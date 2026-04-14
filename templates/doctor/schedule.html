@@ -14,40 +14,38 @@
 
     <!-- Schedule Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for day in "0123456" %}
-            {% with day_index=forloop.counter0 %}
+        {% for day_name, slots in day_schedule %}
             <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full -mr-12 -mt-12 group-hover:bg-primary/5 transition-colors"></div>
                 
                 <div class="relative">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-headline font-extrabold text-slate-900">
-                            {% if day == "0" %}Monday{% elif day == "1" %}Tuesday{% elif day == "2" %}Wednesday{% elif day == "3" %}Thursday{% elif day == "4" %}Friday{% elif day == "5" %}Saturday{% elif day == "6" %}Sunday{% endif %}
-                        </h3>
+                        <h3 class="font-headline font-extrabold text-slate-900">{{ day_name }}</h3>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Weekday</span>
                     </div>
 
                     <div class="space-y-3">
-                        {% for slot in schedule %}
-                            {% if slot.day_of_week == day_index %}
+                        {% if slots %}
+                            {% for slot in slots %}
                             <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                                 <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
                                 <div class="flex-1">
                                     <p class="text-sm font-bold text-slate-700">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400">{{ slot.session_duration_mins }}min sessions</p>
+                                    <p class="text-[10px] font-bold text-primary flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">person</span>
+                                        {{ slot.patient_name }}
+                                    </p>
                                 </div>
                             </div>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if not schedule|dictsort:"day_of_week" %}
-                        <!-- This logic is a bit complex for Django templates without custom tags, 
-                             so we'll assume the doctor has a schedule or show a 'No slots' message manually if needed -->
+                            {% endfor %}
+                        {% else %}
+                            <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                                No scheduled hours for this day.
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            {% endwith %}
         {% endfor %}
     </div>
 

@@ -100,14 +100,57 @@ def appointment_diagnosis(request, appointment_id):
 
 @user_passes_test(is_doctor)
 def doctor_schedule(request):
-    """View to show the doctor's weekly work schedule (Read-only)."""
-    from appointments.models import DoctorSchedule
-    schedule = DoctorSchedule.objects.filter(doctor=request.user).order_by('day_of_week', 'start_time')
+    from appointments.models import Appointment
+    from availabilitySlots.models import AppointmentSlot
+    from datetime import timedelta
     
-    # Map day integers to names for cleaner display if needed, 
-    # but we'll handle it in the template for better formatting.
+    today = timezone.now().date()
+    monday = today - timedelta(days=today.weekday())
+    week_dates = [monday + timedelta(days=i) for i in range(7)]
+    
+    weekdays_names = [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    ]
+    
+    booked_slots = AppointmentSlot.objects.filter(
+        doctor=request.user,
+        date__range=[monday, week_dates[-1]],
+        status='BOOKED'
+    ).order_by('date', 'start_time')
+    
+    appointments = Appointment.objects.filter(
+        doctor=request.user,
+        appointment_date__range=[monday, week_dates[-1]],
+        status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+    ).select_related('patient')
+    
+    appt_map = {(a.appointment_date, a.start_time): a for a in appointments}
+    
+    day_schedule = []
+    
+    for i, target_date in enumerate(week_dates):
+        day_name = weekdays_names[i]
+        active_slots = []
+        
+        for slot in booked_slots:
+            if slot.date == target_date:
+                appt = appt_map.get((slot.date, slot.start_time))
+                patient_name = "Unknown Patient"
+                if appt:
+                    patient_name = appt.patient.get_full_name() or appt.patient.username
+                
+                active_slots.append({
+                    'start_time': slot.start_time,
+                    'end_time': slot.end_time,
+                    'patient_name': patient_name,
+                    'status': 'BOOKED'
+                })
+        
+        day_schedule.append((day_name, active_slots))
+
     return render(request, 'doctor/schedule.html', {
-        'schedule': schedule
+        'day_schedule': day_schedule,
+        'week_range': f"{monday.strftime('%b %d')} - {week_dates[-1].strftime('%b %d, %Y')}"
     })
 
 @user_passes_test(is_doctor)
@@ -290,4 +333,4 @@ def doctor_monthly_planner(request):
     })
 
 
-
+
