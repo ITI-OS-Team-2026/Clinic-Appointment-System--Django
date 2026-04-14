@@ -1,0 +1,170 @@
+{% extends 'receptionist/base_receptionist.html' %}
+
+{% block title %}Queue & Wait Management | Aura Health Systems{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Top Stats -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">Receptionist Queue</h1>
+            <p class="text-sm font-medium text-slate-400 mt-1">Manage today's patient arrivals and wait times.</p>
+        </div>
+        
+        <div class="flex gap-4">
+            <div class="bg-white px-6 py-4 rounded-3xl border border-slate-200 shadow-sm min-w-[180px]">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Checked In (Waiting)</p>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-headline font-extrabold text-slate-800" id="kpi-waiting">0</p>
+                    <span class="text-[10px] font-bold text-emerald-500 mb-1.5 flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">trending_up</span> Live</span>
+                </div>
+            </div>
+            <div class="bg-white px-6 py-4 rounded-3xl border border-slate-200 shadow-sm min-w-[180px]">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Scheduled</p>
+                <p class="text-3xl font-headline font-extrabold text-slate-800" id="kpi-total">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Container -->
+    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
+        
+        <!-- Controls Bar -->
+        <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-widest" id="clock">00:00 AM</span>
+            </div>
+            <div class="relative w-80">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                <input type="text" id="searchInput" placeholder="Search patient or doctor..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+            </div>
+        </div>
+
+        <!-- Table Header -->
+        <div class="grid grid-cols-12 gap-4 px-10 py-4 bg-white border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] hidden md:grid">
+            <div class="col-span-2">Time Slot</div>
+            <div class="col-span-3">Patient Details</div>
+            <div class="col-span-2">Provider</div>
+            <div class="col-span-2">Status</div>
+            <div class="col-span-1 text-center">Wait Time</div>
+            <div class="col-span-2 text-right">Actions</div>
+        </div>
+
+        <!-- Table Body -->
+        <div id="appointments-body" class="overflow-y-auto custom-scrollbar flex-1 p-2">
+            <div class="flex flex-col items-center justify-center h-48 text-slate-400">
+                <span class="material-symbols-outlined animate-spin text-3xl mb-2 text-primary">sync</span>
+                <p class="text-sm font-medium">Syncing live queue...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allAppointments = [];
+
+    function calculateWaitTime(checkInIso) {
+        if (!checkInIso) return '-';
+        const checkInTime = new Date(checkInIso);
+        const diffMs = new Date() - checkInTime;
+        if (diffMs < 0) return '00:00';
+        const totalSecs = Math.floor(diffMs / 1000);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateWaitTimesUI() {
+        document.querySelectorAll('.wait-time-calc').forEach(el => {
+            const iso = el.getAttribute('data-time');
+            if(iso) {
+                const waitStr = calculateWaitTime(iso);
+                el.innerText = waitStr;
+                if (parseInt(waitStr.split(':')[0]) >= 20) el.classList.add('text-rose-500', 'font-extrabold');
+            }
+        });
+    }
+
+    // Wrap the global submitReschedule function logic to load appointments after success
+    window.submitReschedule = (function(original) {
+        return function() {
+            original(loadAppointments);
+        };
+    })(window.submitReschedule);
+
+    function performAction(id, action) {
+        if (action === 'reschedule') { 
+            openRescheduleModal(allAppointments.find(a => a.id === id)); 
+            return; 
+        }
+        fetch(`/appointments/${id}/${action}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+        }).then(res => res.json()).then(data => {
+            if (data.error) showToast(data.error, true);
+            else { showToast("Action Successful!"); loadAppointments(); }
+        });
+    }
+
+    function renderAppointments() {
+        const doc = document.getElementById('appointments-body');
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allAppointments.filter(a => {
+            if (q === '') return !['COMPLETED', 'NO_SHOW', 'CANCELLED'].includes(a.status);
+            return (a.patient_name || '').toLowerCase().includes(q) || (a.doctor_name || '').toLowerCase().includes(q);
+        }).sort((a,b) => (a.status === 'CHECKED_IN' ? -1 : 1) || a.start_time.localeCompare(b.start_time));
+        
+        document.getElementById('kpi-waiting').innerText = allAppointments.filter(a => a.status === 'CHECKED_IN').length;
+        document.getElementById('kpi-total').innerText = allAppointments.length;
+        doc.innerHTML = '';
+        if (filtered.length === 0) { doc.innerHTML = '<div class="flex flex-col items-center justify-center h-40 text-slate-400"><span class="material-symbols-outlined text-4xl mb-2 opacity-50">done_all</span><p class="text-sm font-medium">No active appointments found.</p></div>'; return; }
+        
+        filtered.forEach(appt => {
+            let actions = '';
+            let sClass = 'status-requested', sText = appt.status, wait = '<span class="text-slate-300">-</span>';
+            if (appt.status === 'REQUESTED') {
+                actions = `<button class="action-btn px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200" onclick="performAction(${appt.id}, 'confirm')">Confirm</button>`;
+            } else if (appt.status === 'CONFIRMED') {
+                sClass = 'status-confirmed';
+                actions = `<button class="action-btn px-4 py-2 bg-primary text-white rounded-lg text-[10px] font-bold shadow-md shadow-primary/20" onclick="performAction(${appt.id}, 'checkin')">Check In</button>
+                           <button class="action-btn px-3 py-2 text-rose-500 text-[10px] font-bold" onclick="performAction(${appt.id}, 'noshow')">No Show</button>
+                           <button class="action-btn px-3 py-2 text-slate-500 text-[10px] font-bold" onclick="performAction(${appt.id}, 'reschedule')">Reschedule</button>`;
+            } else if (appt.status === 'CHECKED_IN') {
+                sClass = 'status-checked-in'; sText = 'In Waiting';
+                wait = `<div class="flex items-center gap-1 font-bold text-xs"><span class="material-symbols-outlined text-[14px] text-amber-500">timer</span><span class="wait-time-calc" data-time="${appt.check_in_time}">${calculateWaitTime(appt.check_in_time)}</span></div>`;
+                actions = `<button class="action-btn px-4 py-2 bg-secondary text-white rounded-lg text-[10px] font-bold" onclick="performAction(${appt.id}, 'complete')">✓ Complete</button>`;
+            }
+            const row = document.createElement('div');
+            row.className = "grid grid-cols-12 gap-4 px-10 py-5 border-b border-slate-50 items-center hover:bg-slate-50/50 transition-colors group";
+            row.innerHTML = `
+                <div class="col-span-2 text-sm font-bold text-slate-800">${appt.start_time.substring(0,5)} <span class="text-[10px] text-slate-400 font-medium">to ${appt.end_time.substring(0,5)}</span></div>
+                <div class="col-span-3 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs">${appt.patient_name[0]}</div>
+                    <span class="text-sm font-bold text-slate-700">${appt.patient_name}</span>
+                </div>
+                <div class="col-span-2 text-sm font-semibold text-slate-500">${appt.doctor_name}</div>
+                <div class="col-span-2"><span class="status-pill ${sClass}">${sText}</span></div>
+                <div class="col-span-1 flex justify-center">${wait}</div>
+                <div class="col-span-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">${actions}</div>`;
+            doc.appendChild(row);
+        });
+        updateWaitTimesUI();
+    }
+
+    function loadAppointments() {
+        fetch('/appointments/today/').then(res => res.json()).then(data => { allAppointments = data; renderAppointments(); });
+    }
+
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }, 1000);
+
+    document.getElementById('searchInput').addEventListener('input', renderAppointments);
+    window.onload = () => { loadAppointments(); setInterval(loadAppointments, 30000); setInterval(updateWaitTimesUI, 1000); };
+</script>
+{% endblock %}

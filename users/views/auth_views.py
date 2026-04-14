@@ -17,8 +17,12 @@ def patient_register(request):
         gender = request.POST.get('gender')
         address = request.POST.get('address')
         phone = request.POST.get('contact_number')
+        
+        full_name = request.POST.get('first_name', '')
+        first_name = full_name.split()[0] if full_name else ''
+        last_name = ' '.join(full_name.split()[1:]) if len(full_name.split()) > 1 else ''
 
-        user = User.objects.create_user(username=u, email=e, password=p, role='PATIENT')
+        user = User.objects.create_user(username=u, email=e, password=p, role='PATIENT', first_name=first_name, last_name=last_name)
         
         PatientProfile.objects.create(
             user=user, 
@@ -75,3 +79,32 @@ def logout_view(request):
 
 def forget_password(request):
     return render(request, 'auth/forget_password.html')
+
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='/users/login/')
+def patient_profile(request):
+    if request.user.role != 'PATIENT':
+        return redirect_based_on_role(request)
+        
+    profile = request.user.patient_profile
+    
+    if request.method == 'POST':
+        request.user.first_name = request.POST.get('first_name', request.user.first_name)
+        request.user.last_name = request.POST.get('last_name', request.user.last_name)
+        request.user.save()
+        
+        profile.contact_number = request.POST.get('contact_number', profile.contact_number)
+        profile.address = request.POST.get('address', profile.address)
+        profile.blood_type = request.POST.get('blood_type', profile.blood_type)
+        profile.gender = request.POST.get('gender', profile.gender)
+        
+        dob = request.POST.get('date_of_birth')
+        if dob:
+            profile.date_of_birth = dob
+            
+        profile.save()
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('patient_profile')
+        
+    return render(request, 'patient/profile.html', {'profile': profile})

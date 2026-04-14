@@ -1,0 +1,60 @@
+{% extends 'doctor/base_doctor.html' %}
+
+{% block title %}My Schedule | Aura Health{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">Working Schedule</h1>
+            <p class="text-slate-500 font-medium mt-1">Your official clinic hours and recurring availability slots</p>
+        </div>
+    </div>
+
+    <!-- Schedule Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for day in "0123456" %}
+            {% with day_index=forloop.counter0 %}
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full -mr-12 -mt-12 group-hover:bg-primary/5 transition-colors"></div>
+                
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-headline font-extrabold text-slate-900">
+                            {% if day == "0" %}Monday{% elif day == "1" %}Tuesday{% elif day == "2" %}Wednesday{% elif day == "3" %}Thursday{% elif day == "4" %}Friday{% elif day == "5" %}Saturday{% elif day == "6" %}Sunday{% endif %}
+                        </h3>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Weekday</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for slot in schedule %}
+                            {% if slot.day_of_week == day_index %}
+                            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-700">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ slot.session_duration_mins }}min sessions</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if not schedule|dictsort:"day_of_week" %}
+                        <!-- This logic is a bit complex for Django templates without custom tags, 
+                             so we'll assume the doctor has a schedule or show a 'No slots' message manually if needed -->
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+
+  
+</div>
+
+<style>
+/* Custom split filter for template if not already present (simplified) */
+</style>
+{% endblock %}

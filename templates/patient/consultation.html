@@ -1,0 +1,63 @@
+{% extends 'patient/base_patient.html' %}
+{% block content %}
+<main class="max-w-4xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <a href="/appointments/patient/dashboard/" class="text-sm font-bold text-slate-400 hover:text-primary transition-colors flex items-center gap-1 mb-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Back to Dashboard
+            </a>
+            <h2 class="text-3xl font-heading font-extrabold text-slate-900">Consultation Summary</h2>
+            <p class="text-slate-500 mt-1">Dr. {{ appointment.doctor.get_full_name }} • {{ appointment.appointment_date }} at {{ appointment.start_time }}</p>
+        </div>
+        <div class="px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+            <span class="text-sm font-bold text-emerald-700">COMPLETED</span>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div class="p-8 border-b border-slate-100">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Diagnosis</h3>
+            <p class="text-slate-800 font-medium whitespace-pre-line">{{ consultation.diagnosis }}</p>
+        </div>
+        <div class="p-8 border-b border-slate-100">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Doctor's Notes</h3>
+            <p class="text-slate-800 font-medium whitespace-pre-line">{{ consultation.notes }}</p>
+        </div>
+        {% if consultation.requested_tests %}
+        <div class="p-8 border-b border-slate-100 bg-slate-50">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Requested Tests</h3>
+            <p class="text-slate-800 font-medium whitespace-pre-line">{{ consultation.requested_tests }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Prescriptions -->
+    <h3 class="text-xl font-heading font-extrabold text-slate-900 mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">prescriptions</span> Medications
+    </h3>
+    
+    {% if prescriptions %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for p in prescriptions %}
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-50 text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined">pill</span>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-900 text-lg">{{ p.drug_name }}</h4>
+                <p class="text-sm text-slate-500 mt-1"><span class="font-bold text-slate-700">Dose:</span> {{ p.dose }}</p>
+                <p class="text-sm text-slate-500"><span class="font-bold text-slate-700">Duration:</span> {{ p.duration }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white p-8 rounded-2xl border border-dashed border-slate-200 text-center text-slate-500">
+        No medications prescribed.
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

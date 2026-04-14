@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Aura Health Systems | Doctor{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#0891B2', secondary: '#14B8A6', background: '#F8FAFC' },
+                    fontFamily: { headline: ["Manrope", "sans-serif"], body: ["Inter", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; overflow-x: hidden; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { vertical-align: middle; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .sidebar-link.active { background-color: #f1f5f9; color: #0891B2; border-right: 3px solid #0891B2; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="text-slate-800 antialiased selection:bg-primary selection:text-white">
+
+    <div class="flex min-h-screen">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex">
+            <!-- Logo Section -->
+            <div class="p-8 pb-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                        <span class="material-symbols-outlined text-[24px]">medical_services</span>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-headline font-extrabold text-slate-900 leading-none">Aura Health</h2>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Doctor Portal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+                <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 mt-6">My Workspace</p>
+                
+                <a href="{% url 'doctor_queue' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if request.path == '/records/doctor/queue/' %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                    <span class="text-[15px]">Daily Queue</span>
+                </a>
+
+                <a href="{% url 'doctor_monthly_planner' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/month-planner/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">calendar_view_month</span>
+                    <span class="text-[15px]">Monthly Planner</span>
+                </a>
+
+                <a href="{% url 'booking_requests' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/requests/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">notification_important</span>
+                    <span class="text-[15px]">Booking Requests</span>
+                </a>
+
+                <a href="{% url 'doctor_profile' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/profile/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">account_circle</span>
+                    <span class="text-[15px]">My Profile</span>
+                </a>
+
+                <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 mt-8">Clinical Management</p>
+
+                <a href="{% url 'doctor_schedule' %}" class="sidebar-link group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 hover:text-primary transition-all {% if '/schedule/' in request.path %}active{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+                    <span class="text-[15px]">My Schedule</span>
+                </a>
+            </nav>
+
+            <!-- Bottom Profile -->
+            <div class="p-6 border-t border-slate-100">
+                <div class="bg-slate-50 p-4 rounded-3xl flex items-center gap-3">
+                    <a href="{% url 'doctor_profile' %}" class="flex flex-1 items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-white transition-all">Dr.</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-900 truncate">{{ request.user.username }}</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Profile Settings</p>
+                        </div>
+                    </a>
+                    <a href="/users/logout/" class="text-rose-400 hover:text-rose-600 transition-colors" title="Logout">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 flex flex-col">
+            
+            <!-- TOP NAVBAR -->
+            <header class="h-20 bg-white/80 backdrop-blur-lg border-b border-slate-200 flex items-center px-8 justify-between z-40">
+                <div class="flex items-center gap-4 lg:hidden">
+                    <button class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <h1 class="font-headline font-extrabold text-slate-900">Aura Health</h1>
+                </div>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        System Online
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <button class="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 shadow-sm relative">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- PAGE SCROLLABLE AREA -->
+            <main class="flex-1 overflow-y-auto custom-scrollbar bg-[#F8FAFC]">
+                <div class="p-8 max-w-[100rem] mx-auto">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+    <!-- Premium Toast / Notification System -->
+    <div id="toast-container" class="fixed top-8 right-8 z-[100] flex flex-col gap-4 pointer-events-none">
+        <!-- Toasts will be injected here -->
+    </div>
+
+    <template id="toast-template">
+        <div class="toast-item pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-slate-200/50 px-6 py-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] min-w-[320px] max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+            <div class="toast-icon-wrapper w-10 h-10 rounded-2xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[24px]"></span>
+            </div>
+            <div class="flex-1">
+                <p class="toast-message font-bold text-slate-900 text-sm leading-tight"></p>
+                <p class="toast-subtext text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">System Notification</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-500 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </template>
+
+    <!-- Global Premium Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-[2.5rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md animate-in zoom-in-95 duration-300">
+                    <div class="bg-white px-8 pt-10 pb-8">
+                        <div class="flex flex-col items-center">
+                            <div class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 mb-6">
+                                <span class="material-symbols-outlined text-[32px]">help_center</span>
+                            </div>
+                            <div class="text-center">
+                                <h3 class="text-xl font-headline font-black text-slate-900" id="confirm-title">Are you sure?</h3>
+                                <div class="mt-3">
+                                    <p class="text-sm text-slate-500 font-medium leading-relaxed" id="confirm-message">This action cannot be undone.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-8 py-6 flex gap-3">
+                        <button type="button" id="confirm-cancel" class="flex-1 px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-all uppercase tracking-widest">
+                            Cancel
+                        </button>
+                        <button type="button" id="confirm-proceed" class="flex-1 px-6 py-3.5 bg-rose-600 rounded-2xl text-sm font-bold text-white hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all uppercase tracking-widest">
+                            Proceed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast / Notification System -->
+    ... (script content continues) ...
+    <script>
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const template = document.getElementById('toast-template');
+            if(!container || !template) return;
+            const clone = template.content.cloneNode(true);
+            const item = clone.querySelector('.toast-item');
+            const iconWrapper = clone.querySelector('.toast-icon-wrapper');
+            const icon = clone.querySelector('.material-symbols-outlined');
+            const message = clone.querySelector('.toast-message');
+
+            message.innerText = msg;
+            
+            if (type === 'error') {
+                icon.innerText = 'error';
+                iconWrapper.classList.add('bg-rose-50', 'text-rose-500');
+            } else if (type === 'warning') {
+                icon.innerText = 'warning';
+                iconWrapper.classList.add('bg-amber-50', 'text-amber-500');
+            } else {
+                icon.innerText = 'check_circle';
+                iconWrapper.classList.add('bg-emerald-50', 'text-emerald-500');
+            }
+
+            container.appendChild(clone);
+
+            const elements = container.children;
+            const lastAdded = elements[elements.length - 1];
+            setTimeout(() => {
+                if (lastAdded) {
+                    lastAdded.classList.add('opacity-0', 'translate-x-10');
+                    lastAdded.style.transition = 'all 0.5s ease';
+                    setTimeout(() => lastAdded.remove(), 500);
+                }
+            }, 5000);
+        }
+
+        // Global Confirmation Logic
+        window.confirmAction = function(options) {
+            const modal = document.getElementById('confirm-modal');
+            const title = document.getElementById('confirm-title');
+            const message = document.getElementById('confirm-message');
+            const proceedBtn = document.getElementById('confirm-proceed');
+            const cancelBtn = document.getElementById('confirm-cancel');
+
+            title.innerText = options.title || 'Are you sure?';
+            message.innerText = options.message || 'This action cannot be undone.';
+            proceedBtn.innerText = options.proceedText || 'Proceed';
+            proceedBtn.className = `flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-all uppercase tracking-widest ${options.type === 'danger' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200' : 'bg-primary hover:bg-primary/90 shadow-primary/20'}`;
+
+            modal.classList.remove('hidden');
+
+            return new Promise((resolve) => {
+                proceedBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(true);
+                };
+                cancelBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(false);
+                };
+            });
+        };
+
+        // Auto-handle Django Messages
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+        });
+
+        const getCookie = (name) => {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

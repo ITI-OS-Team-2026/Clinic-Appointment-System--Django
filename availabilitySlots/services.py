@@ -1,31 +1,41 @@
 from datetime import datetime, timedelta, date
-from .models import DoctorWeeklySchedule, DoctorScheduleException, AppointmentSlot
+from .models import AppointmentSlot
+from appointments.models import DoctorSchedule, ScheduleException
 
 def generate_slots_for_date(doctor, target_date: date):
+    # Idempotency: Clear existing unbooked slots first to avoid duplicates or orphans
+    AppointmentSlot.objects.filter(
+        doctor=doctor, 
+        date=target_date, 
+        status='AVAILABLE'
+    ).delete()
+
     try:
-        exception = DoctorScheduleException.objects.get(
-            doctor=doctor, date=target_date
+        exception = ScheduleException.objects.get(
+            doctor=doctor, exception_date=target_date
         )
-        if exception.exception_type == 'DAY_OFF':
+        if exception.is_day_off:
             return []   
 
         start_time = exception.start_time
         end_time   = exception.end_time
-        slot_duration = 30
+        slot_duration = 30 # default
         buffer        = 5
 
-    except DoctorScheduleException.DoesNotExist:
+    except ScheduleException.DoesNotExist:
         day_of_week = target_date.weekday()
-        try:
-            schedule = DoctorWeeklySchedule.objects.get(
-                doctor=doctor, day_of_week=day_of_week
-            )
-            start_time    = schedule.start_time
-            end_time      = schedule.end_time
-            slot_duration = schedule.slot_duration_minutes
-            buffer        = schedule.buffer_minutes
-        except DoctorWeeklySchedule.DoesNotExist:
-            return [] 
+        # Find schedule from appointments app
+        schedule = DoctorSchedule.objects.filter(
+            doctor=doctor, day_of_week=day_of_week
+        ).first()
+        
+        if not schedule:
+            return []
+            
+        start_time    = schedule.start_time
+        end_time      = schedule.end_time
+        slot_duration = schedule.session_duration_mins
+        buffer        = schedule.buffer_duration_mins
 
     slots_created = []
     current = datetime.combine(target_date, start_time)
@@ -35,13 +45,24 @@ def generate_slots_for_date(doctor, target_date: date):
 
     while current + slot_delta <= shift_end:
         slot_end = current + slot_delta
+        # Check if an appointment already exists for this slot to avoid "Ghost" available slots
+        from appointments.models import Appointment
+        exists = Appointment.objects.filter(
+            doctor=doctor,
+            appointment_date=target_date,
+            start_time=current.time(),
+            status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+        ).exists()
+        
+        initial_status = 'BOOKED' if exists else 'AVAILABLE'
+
         slot, created = AppointmentSlot.objects.get_or_create(
             doctor     = doctor,
             date       = target_date,
             start_time = current.time(),
             defaults={
                 'end_time': slot_end.time(),
-                'status':   'AVAILABLE',
+                'status':   initial_status,
             }
         )
         if created:

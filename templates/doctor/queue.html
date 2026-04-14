@@ -1,0 +1,168 @@
+{% extends 'doctor/base_doctor.html' %}
+
+{% block title %}Doctor Daily Queue | Aura Health{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">Today's Patient Queue</h1>
+            <p class="text-slate-500 font-medium mt-1">Managing your active patients for {{ today|date:"l, F j, Y" }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="location.reload()" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[20px]">refresh</span>
+                Refresh Queue
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Quick Glance -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[28px]">groups</span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Patients</p>
+                    <p class="text-2xl font-headline font-extrabold text-slate-900">{{ stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-4 text-amber-600">
+                <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[28px]">hourglass_empty</span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Waiting (Checked-in)</p>
+                    <p class="text-2xl font-headline font-extrabold text-slate-900">{{ stats.waiting }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-4 text-emerald-600">
+                <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[28px]">check_circle</span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Completed</p>
+                    <p class="text-2xl font-headline font-extrabold text-slate-900">{{ stats.completed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-4 text-blue-600">
+                <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[28px]">event_upcoming</span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Upcoming</p>
+                    <p class="text-2xl font-headline font-extrabold text-slate-900">{{ stats.confirmed }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Queue Table -->
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-8 py-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+            <h3 class="font-headline font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">view_list</span>
+                Patient Schedule
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                        <th class="px-8 py-5">Time Slot</th>
+                        <th class="px-8 py-5">Patient Details</th>
+                        <th class="px-8 py-5">Status</th>
+                        <th class="px-8 py-5 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for appt in appointments %}
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-slate-100 flex flex-col items-center justify-center text-slate-500 group-hover:bg-primary group-hover:text-white transition-all">
+                                    <span class="text-[10px] font-bold uppercase leading-none">{{ appt.start_time|time:"A" }}</span>
+                                    <span class="text-sm font-bold tracking-tight">{{ appt.start_time|time:"H:i" }}</span>
+                                </div>
+                                <span class="text-xs font-medium text-slate-400">to {{ appt.end_time|time:"H:i" }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold uppercase">
+                                    {{ appt.patient.username|slice:":1" }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900">{{ appt.patient.get_full_name|default:appt.patient.username }}</p>
+                                    <p class="text-[11px] text-slate-400 font-medium">Patient ID: #P-{{ appt.patient.id|add:"1000" }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            {% if appt.status == 'CHECKED_IN' %}
+                                <span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    Waiting
+                                </span>
+                            {% elif appt.status == 'COMPLETED' %}
+                                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px]">done_all</span>
+                                    Success
+                                </span>
+                            {% elif appt.status == 'CONFIRMED' %}
+                                <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Confirmed</span>
+                            {% elif appt.status == 'REQUESTED' %}
+                                <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wider">Requested</span>
+                            {% else %}
+                                <span class="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[10px] font-bold uppercase tracking-wider">{{ appt.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex justify-end gap-2">
+                                {% if appt.status == 'CHECKED_IN' %}
+                                    <a href="{% url 'appointment_diagnosis' appt.id %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                                        <span class="material-symbols-outlined text-[18px]">clinical_notes</span>
+                                        Start Consultation
+                                    </a>
+                                {% elif appt.status == 'CONFIRMED' or appt.status == 'REQUESTED' %}
+                                    <form method="POST" action="{% url 'noshow-appointment' appt.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="p-2 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all" title="Mark as No Show">
+                                            <span class="material-symbols-outlined text-[22px]">event_busy</span>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <a href="#" class="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-xl transition-all" title="View Records">
+                                    <span class="material-symbols-outlined text-[22px]">visibility</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-8 py-20 text-center">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+                                    <span class="material-symbols-outlined text-[40px]">calendar_today</span>
+                                </div>
+                                <h4 class="text-slate-900 font-bold">No appointments for today</h4>
+                                <p class="text-sm text-slate-400 max-w-[240px]">Relax! Your schedule is clear. New check-ins from receptionist will appear here.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

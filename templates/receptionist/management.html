@@ -1,0 +1,236 @@
+{% extends 'receptionist/base_receptionist.html' %}
+
+{% block title %}Appointment Management | Aura Health Systems{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">Appointment Management</h1>
+            <p class="text-sm font-medium text-slate-400 mt-1">Advanced search and control for all clinic appointments.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="fetchAppointments()" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[20px]">refresh</span>
+                Refresh List
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search -->
+            <div class="md:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-2">Patient Search</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">person_search</span>
+                    <input type="text" id="search-q" placeholder="Name or Username..." oninput="debounceFetch()" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                </div>
+            </div>
+
+            <!-- Doctor Select -->
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-2">Provider</label>
+                <select id="filter-doctor" onchange="fetchAppointments()" class="w-full bg-slate-50 border-slate-200 rounded-2xl py-2.5 px-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                    <option value="">All Doctors</option>
+                </select>
+            </div>
+
+            <!-- Date Range -->
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-2">From</label>
+                    <input type="date" id="filter-start-date" onchange="fetchAppointments()" class="w-full bg-slate-50 border-slate-200 rounded-2xl py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                </div>
+                <div class="flex-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-2">To</label>
+                    <input type="date" id="filter-end-date" onchange="fetchAppointments()" class="w-full bg-slate-50 border-slate-200 rounded-2xl py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 px-2">Status</label>
+                <select id="filter-status" onchange="fetchAppointments()" class="w-full bg-slate-50 border-slate-200 rounded-2xl py-2.5 px-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">Any Status</option>
+                    <option value="REQUESTED">Requested</option>
+                    <option value="CONFIRMED">Confirmed</option>
+                    <option value="CHECKED_IN">Checked In</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                    <option value="NO_SHOW">No Show</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden min-h-[500px] flex flex-col">
+        <div class="grid grid-cols-12 gap-4 px-10 py-5 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] hidden md:grid bg-slate-50/50">
+            <div class="col-span-2">Date & Time</div>
+            <div class="col-span-3">Patient</div>
+            <div class="col-span-2">Doctor</div>
+            <div class="col-span-2">Status</div>
+            <div class="col-span-3 text-right">Actions</div>
+        </div>
+
+        <div id="management-body" class="divide-y divide-slate-50">
+            <!-- Loading -->
+            <div class="flex flex-col items-center justify-center py-24 text-slate-400">
+                <span class="material-symbols-outlined animate-spin text-4xl mb-4 text-primary">sync</span>
+                <p class="font-medium">Searching appointments...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let searchTimeout = null;
+    let appointmentsData = [];
+
+    function debounceFetch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(fetchAppointments, 500);
+    }
+
+    function fetchDoctors() {
+        fetch('/appointments/api/doctors/')
+            .then(res => res.json())
+            .then(doctors => {
+                const select = document.getElementById('filter-doctor');
+                doctors.forEach(doc => {
+                    const opt = document.createElement('option');
+                    opt.value = doc.id;
+                    opt.innerText = doc.full_name;
+                    select.appendChild(opt);
+                });
+            });
+    }
+
+    function fetchAppointments() {
+        const q = document.getElementById('search-q').value;
+        const doctor = document.getElementById('filter-doctor').value;
+        const start = document.getElementById('filter-start-date').value;
+        const end = document.getElementById('filter-end-date').value;
+        const status = document.getElementById('filter-status').value;
+
+        let url = `/appointments/api/search/?q=${encodeURIComponent(q)}&doctor_id=${doctor}&start_date=${start}&end_date=${end}&status=${status}`;
+        
+        const body = document.getElementById('management-body');
+        body.innerHTML = '<div class="flex flex-col items-center justify-center py-24 text-slate-400"><span class="material-symbols-outlined animate-spin text-4xl mb-4 text-primary">sync</span><p class="font-medium">Searching appointments...</p></div>';
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                appointmentsData = data;
+                renderResults();
+            })
+            .catch(err => {
+                showToast("Failed to fetch data", true);
+            });
+    }
+
+    function renderResults() {
+        const body = document.getElementById('management-body');
+        body.innerHTML = '';
+
+        if (appointmentsData.length === 0) {
+            body.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-24 text-slate-400">
+                    <span class="material-symbols-outlined text-5xl mb-4 opacity-20">search_off</span>
+                    <p class="font-bold text-slate-500">No appointments found</p>
+                    <p class="text-sm">Try adjusting your filters or search query.</p>
+                </div>`;
+            return;
+        }
+
+        appointmentsData.forEach(appt => {
+            let actions = '';
+            let sClass = 'status-requested';
+            
+            if (appt.status === 'CONFIRMED') sClass = 'status-confirmed';
+            else if (appt.status === 'CHECKED_IN') sClass = 'status-checked-in';
+            else if (appt.status === 'COMPLETED') sClass = 'bg-slate-100 text-slate-500';
+
+            // Management actions
+            if (!['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(appt.status)) {
+                actions = `
+                    <button onclick="performManagementAction(${appt.id}, 'reschedule')" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Reschedule">
+                        <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                    </button>
+                    <button onclick="performManagementAction(${appt.id}, 'confirm')" class="p-2 text-slate-400 hover:text-emerald-500 transition-colors" title="Confirm">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    </button>
+                    <button onclick="performManagementAction(${appt.id}, 'noshow')" class="p-2 text-slate-400 hover:text-rose-500 transition-colors" title="Mark No-Show">
+                        <span class="material-symbols-outlined text-[20px]">person_off</span>
+                    </button>
+                `;
+            }
+
+            const row = document.createElement('div');
+            row.className = "grid grid-cols-1 md:grid-cols-12 gap-4 px-10 py-5 items-center hover:bg-slate-50/50 transition-colors";
+            
+            const dateStr = new Date(appt.appointment_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            row.innerHTML = `
+                <div class="col-span-2">
+                    <p class="text-sm font-bold text-slate-800">${dateStr}</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${appt.start_time.substring(0,5)} - ${appt.end_time.substring(0,5)}</p>
+                </div>
+                <div class="col-span-3 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 font-bold select-none">${appt.patient_name[0]}</div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-900 leading-none">${appt.patient_name}</p>
+                        <p class="text-[10px] font-medium text-slate-400 mt-1">ID: #000${appt.id}</p>
+                    </div>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-sm font-semibold text-slate-600">${appt.doctor_name}</p>
+                </div>
+                <div class="col-span-2">
+                    <span class="status-pill ${sClass}">${appt.status.replace('_', ' ')}</span>
+                </div>
+                <div class="col-span-3 flex justify-end gap-1">
+                    ${actions}
+                </div>
+            `;
+            body.appendChild(row);
+        });
+    }
+
+    // Management actions
+    function performManagementAction(id, action) {
+        if (action === 'reschedule') {
+            const appt = appointmentsData.find(a => a.id === id);
+            openRescheduleModal(appt);
+            return;
+        }
+        
+        if (!confirm(`Are you sure you want to ${action} this appointment?`)) return;
+
+        fetch(`/appointments/${id}/${action}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+        }).then(res => res.json()).then(data => {
+            if (data.error) showToast(data.error, true);
+            else { showToast("Success!"); fetchAppointments(); }
+        });
+    }
+
+    window.onload = () => {
+        fetchDoctors();
+        fetchAppointments();
+    };
+</script>
+
+<style>
+    .status-pill { padding: 4px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .status-requested { background-color: #f1f5f9; color: #64748b; }
+    .status-confirmed { background-color: #e0f2fe; color: #0284c7; }
+    .status-checked-in { background-color: #dcfce7; color: #16a34a; }
+</style>
+{% endblock %}

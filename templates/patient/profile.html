@@ -1,0 +1,227 @@
+{% extends 'patient/base_patient.html' %}
+
+{% block title %}My Profile | Aura Health{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Header Card -->
+    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden relative">
+        <div class="h-44 bg-gradient-to-r from-secondary to-primary relative flex items-end justify-center">
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, #fff 1px, transparent 0); background-size: 24px 24px;"></div>
+            <div class="absolute inset-0 bg-black/5"></div>
+        </div>
+        
+        <div class="px-12 pb-10 pt-0 flex flex-col md:flex-row items-center md:items-end gap-10 relative z-10">
+            <div class="-mt-20 w-40 h-40 shrink-0 rounded-[2.5rem] bg-white p-3 shadow-2xl">
+                <div class="w-full h-full rounded-[2rem] bg-slate-50 flex items-center justify-center text-secondary text-5xl font-headline font-extrabold uppercase border-4 border-white shadow-inner">
+                    {{ user.username|slice:":1" }}
+                </div>
+            </div>
+            
+            <div class="flex-1 pb-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 class="text-4xl font-headline font-black text-slate-900 tracking-tight">
+                            {{ user.get_full_name|default:user.username }}
+                        </h1>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="px-4 py-1.5 bg-secondary/10 text-secondary rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                                Patient
+                            </span>
+                            <span class="text-slate-300">|</span>
+                            <span class="text-slate-400 font-bold text-xs uppercase tracking-widest">
+                                Member since {{ user.date_joined|date:"M Y" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Account Summary -->
+        <div class="lg:col-span-4 space-y-8">
+            <div class="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <h3 class="font-headline font-black text-slate-900 text-lg mb-8">Account Details</h3>
+                
+                <div class="space-y-8">
+                    <div class="group">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 group-hover:text-secondary transition-colors">Username</p>
+                        <div class="flex items-center gap-3 text-slate-600">
+                            <span class="material-symbols-outlined text-slate-300">alternate_email</span>
+                            <span class="font-bold text-sm">{{ user.username }}</span>
+                        </div>
+                    </div>
+
+                    <div class="group mx-auto max-w-full">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 group-hover:text-secondary transition-colors">Primary Email</p>
+                        <div class="flex items-center gap-3 text-slate-600">
+                            <span class="material-symbols-outlined text-slate-300 shrink-0">mail</span>
+                            <span class="font-bold text-sm min-w-0 break-all">{{ user.email|default:"Not linked" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 group-hover:text-secondary transition-colors">Last Login</p>
+                        <div class="flex items-center gap-3 text-slate-600">
+                            <span class="material-symbols-outlined text-slate-300">history</span>
+                            <span class="font-bold text-sm text-slate-500">{{ user.last_login|time:"H:i" }} | {{ user.last_login|date:"M d" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details / Edit -->
+        <div class="lg:col-span-8">
+            <div class="bg-white p-12 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <div class="flex items-center justify-between mb-10">
+                    <h3 class="font-headline font-black text-slate-900 text-xl flex items-center gap-3">
+                        <span id="mode-icon" class="material-symbols-outlined text-secondary bg-secondary/10 p-2.5 rounded-2xl">person</span>
+                        <span id="mode-title">Personal Information</span>
+                    </h3>
+                    <button type="button" id="edit-btn" onclick="toggleEditMode()" class="px-4 py-2 bg-slate-50 text-slate-500 hover:text-secondary font-bold text-xs uppercase tracking-widest rounded-xl transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                        Edit
+                    </button>
+                </div>
+
+                <!-- View Mode Section -->
+                <div id="view-section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">First Name</p>
+                            <p class="font-bold text-slate-800">{{ user.first_name|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Last Name</p>
+                            <p class="font-bold text-slate-800">{{ user.last_name|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Contact Number</p>
+                            <p class="font-bold text-slate-800">{{ profile.contact_number|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Date of Birth</p>
+                            <p class="font-bold text-slate-800">{{ profile.date_of_birth|date:'M d, Y'|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Gender</p>
+                            <p class="font-bold text-slate-800">{{ profile.gender|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Blood Type</p>
+                            <p class="font-bold text-slate-800">{{ profile.blood_type|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Address</p>
+                            <p class="font-bold text-slate-800">{{ profile.address|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Section -->
+                <form id="edit-section" method="POST" class="hidden space-y-10">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">First Name</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">person</span>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" 
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Last Name</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">group</span>
+                                <input type="text" name="last_name" value="{{ user.last_name }}"
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Contact Number</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">phone</span>
+                                <input type="text" name="contact_number" value="{{ profile.contact_number }}"
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Date of Birth</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">calendar_month</span>
+                                <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}"
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Gender</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">face</span>
+                                <select name="gender" class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                                    <option value="Male" {% if profile.gender == "Male" %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if profile.gender == "Other" %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Blood Type</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">bloodtype</span>
+                                <input type="text" name="blood_type" value="{{ profile.blood_type }}"
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
+                            </div>
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2 space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Address</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-5 text-slate-400 text-[20px] group-focus-within:text-secondary transition-colors">home</span>
+                                <textarea name="address" rows="3"
+                                       class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300 resize-none">{{ profile.address }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-50 flex items-center justify-end gap-3">
+                        <button type="button" onclick="cancelEditMode()" class="px-6 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-colors text-xs uppercase tracking-widest">Cancel</button>
+                        <button type="submit" class="px-10 py-4 bg-secondary text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[18px]">save</span>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleEditMode() {
+        document.getElementById('view-section').classList.add('hidden');
+        document.getElementById('edit-section').classList.remove('hidden');
+        document.getElementById('edit-btn').classList.add('hidden');
+        document.getElementById('mode-icon').innerText = 'edit_note';
+        document.getElementById('mode-title').innerText = 'Edit Information';
+    }
+
+    function cancelEditMode() {
+        document.getElementById('view-section').classList.remove('hidden');
+        document.getElementById('edit-section').classList.add('hidden');
+        document.getElementById('edit-btn').classList.remove('hidden');
+        document.getElementById('mode-icon').innerText = 'person';
+        document.getElementById('mode-title').innerText = 'Personal Information';
+    }
+</script>
+{% endblock %}

@@ -24,6 +24,7 @@ class Appointment(models.Model):
         ('COMPLETED', 'Completed'),
         ('CANCELLED', 'Cancelled'),
         ('NO_SHOW', 'No Show'),
+        ('RESCHEDULE_REQUIRED', 'Reschedule Required'),
     )
     patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments_as_patient')
     doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments_as_doctor')

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Book Appointment | Aura Health Systems</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0891B2',
+                        secondary: '#14B8A6',
+                        background: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            vertical-align: middle;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Premium Card Effects */
+        .doctor-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .doctor-card:hover:not(.selected) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.1);
+            border-color: #e2e8f0;
+        }
+
+        .doctor-card.selected {
+            border-color: #0891B2;
+            background-color: rgba(8, 145, 178, 0.03);
+            box-shadow: 0 4px 15px -3px rgba(8, 145, 178, 0.15);
+            transform: scale(1.02);
+        }
+
+        .time-slot {
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .time-slot.selected {
+            background-color: #0891B2;
+            color: white;
+            border-color: #0891B2;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+        }
+
+        .time-slot:hover:not(.selected) {
+            border-color: #0891B2;
+            color: #0891B2;
+            background-color: rgba(8, 145, 178, 0.05);
+        }
+
+        .calendar-day {
+            transition: all 0.2s;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day.selected {
+            background-color: #0891B2;
+            color: white;
+            border-radius: 999px;
+            box-shadow: 0 4px 10px rgba(8, 145, 178, 0.3);
+            font-weight: bold;
+        }
+
+        .calendar-day:hover:not(.selected):not(.opacity-50) {
+            background-color: rgba(8, 145, 178, 0.1);
+            border-radius: 999px;
+            color: #0891B2;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased selection:bg-primary selection:text-white pb-20">
+
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="/appointments/patient/dashboard/"
+                        class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-primary hover:text-white text-slate-500 transition-all duration-300">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-headline font-extrabold text-slate-900 tracking-tight">Book Appointment
+                        </h1>
+                        <p class="text-xs font-semibold text-primary uppercase tracking-wider">Aura Health Systems</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 sm:gap-6">
+                    <div class="flex items-center gap-3 bg-slate-50 py-2 px-4 rounded-full border border-slate-100">
+                        <div
+                            class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                            {{ request.user.username|make_list|first|upper }}
+                        </div>
+                        <span class="text-sm font-semibold text-slate-700 hidden sm:block">
+                            {{request.user.username}}</span>
+                    </div>
+                    <a href="/users/logout/"
+                        class="text-sm font-bold text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-3 py-2 rounded-lg">Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+
+                <!-- Left Column (Form) -->
+                <div class="xl:col-span-8 flex flex-col gap-10">
+
+                    <!-- 1. Select Doctor -->
+                    <section>
+                        <div class="flex items-center gap-4 mb-6">
+                            <div
+                                class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">
+                                1</div>
+                            <h2 class="text-2xl font-headline font-bold text-slate-900">Choose Your Specialist</h2>
+                        </div>
+                        <div id="doctors-container" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div
+                                class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                                <span
+                                    class="material-symbols-outlined text-4xl text-slate-300 animate-spin mb-2">refresh</span>
+                                <p class="text-slate-500 font-medium">Loading elite specialists...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. Select Date & Time -->
+                    <section id="datetime-section"
+                        class="opacity-40 pointer-events-none transition-all duration-500 grayscale">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div
+                                class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">
+                                2</div>
+                            <h2 class="text-2xl font-headline font-bold text-slate-900">Select Date & Time</h2>
+                        </div>
+
+                        <div class="bg-white rounded-[2rem] p-6 md:p-10 shadow-sm border border-slate-200">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+
+                                <!-- Mini Calendar Component -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-8">
+                                        <h3 id="calendar-header"
+                                            class="text-xl font-headline font-extrabold text-slate-800 capitalize">-
+                                        </h3>
+                                        <div class="flex gap-2">
+                                            <button onclick="changeMonth(-1)"
+                                                class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span
+                                                    class="material-symbols-outlined text-sm">chevron_left</span></button>
+                                            <button onclick="changeMonth(1)"
+                                                class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span
+                                                    class="material-symbols-outlined text-sm">chevron_right</span></button>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-y-2 gap-x-2 text-center" id="calendar-days">
+                                        <!-- Header labels injected via JS -->
+                                        <!-- Days injected via JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Time Slot Picker -->
+                                <div class="pl-0 lg:pl-12 lg:border-l border-slate-100">
+                                    <h3
+                                        class="text-sm font-bold text-slate-400 mb-6 uppercase tracking-widest flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-base">schedule</span>
+                                        Available Slots
+                                    </h3>
+                                    <div id="time-slots"
+                                        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar">
+                                        <div
+                                            class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                            <span
+                                                class="material-symbols-outlined mb-2 opacity-50">calendar_month</span>
+                                            <p class="text-sm italic">Select a highlighted date.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column (Sidebar Summary) -->
+                <div class="xl:col-span-4">
+                    <div
+                        class="sticky top-28 bg-white shadow-2xl shadow-slate-200/50 rounded-[2rem] p-8 border border-slate-100">
+                        <h3 class="text-xl font-headline font-bold text-slate-900 mb-8 flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                                <span class="material-symbols-outlined">receipt_long</span>
+                            </div>
+                            Booking Summary
+                        </h3>
+
+                        <div class="space-y-4" id="booking-summary-details">
+                            <div
+                                class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-primary/30 transition-colors">
+                                <div
+                                    class="w-12 h-12 flex shrink-0 items-center justify-center bg-white rounded-xl text-primary shadow-sm border border-slate-100 group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <span class="material-symbols-outlined">stethoscope</span>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                                        Specialist</p>
+                                    <p id="summary-doc" class="text-sm font-bold text-slate-800 line-clamp-1">Waiting
+                                        for selection</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-secondary/30 transition-colors">
+                                <div
+                                    class="w-12 h-12 flex shrink-0 items-center justify-center bg-white rounded-xl text-secondary shadow-sm border border-slate-100 group-hover:bg-secondary group-hover:text-white transition-colors">
+                                    <span class="material-symbols-outlined">event_available</span>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date
+                                        & Time</p>
+                                    <p id="summary-datetime" class="text-sm font-bold text-slate-800">Waiting for
+                                        selection</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 mt-6 border-t border-slate-100">
+                                <div
+                                    class="flex justify-between items-center bg-slate-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                                    <!-- Decorative circle -->
+                                    <div class="absolute -right-4 -top-8 w-24 h-24 bg-white/10 rounded-full blur-xl">
+                                    </div>
+                                    <div class="relative z-10">
+                                        <span
+                                            class="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-1">Total
+                                            Due</span>
+                                        <span
+                                            class="text-3xl font-headline font-extrabold text-secondary tracking-tight">Pay
+                                            at Clinic</span>
+                                    </div>
+                                    <div
+                                        class="relative z-10 w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-secondary">verified</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <!-- Button changes state based on readiness -->
+                            <button id="btn-confirm" disabled
+                                class="w-full relative overflow-hidden py-4 rounded-2xl bg-slate-100 text-slate-400 font-headline font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-not-allowed">
+                                <div id="btn-bg"
+                                    class="absolute inset-0 bg-gradient-to-r from-primary to-cyan-500 opacity-0 transition-opacity duration-300">
+                                </div>
+                                <span class="relative z-10 flex items-center gap-2" id="btn-text">
+                                    Confirm Booking
+                                    <span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>
+                                </span>
+                            </button>
+                            <p class="text-xs text-center text-slate-400 mt-4 px-2 font-medium">
+                                By confirming, you agree to Aura Health Systems' <a href="#"
+                                    class="text-primary hover:underline">Conditions</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Feedback Toast -->
+    <div id="toast"
+        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-20 opacity-0 z-50">
+        <span class="material-symbols-outlined text-secondary" id="toast-icon">info</span>
+        <p id="toast-message" class="font-medium text-sm">Message here</p>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            doctor: null,
+            doctorName: null,
+            date: null,
+            startTime: null,
+            availableSlots: [],
+            calendarDate: new Date()
+        };
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+
+        // Show Toast
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
+            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4000);
+        }
+
+        // Fetch Doctors on load
+        fetch('/appointments/api/doctors/')
+            .then(res => res.json())
+            .then(doctors => {
+                const container = document.getElementById('doctors-container');
+                container.innerHTML = '';
+
+                if (doctors.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                            <p class="text-slate-500 font-medium">No specialists available currently.</p>
+                        </div>`;
+                    return;
+                }
+
+                doctors.forEach(doc => {
+                    const dummyImg = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.full_name) + '&background=b7eaff&color=005a70&size=128';
+                    const el = document.createElement('div');
+                    el.className = 'doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group';
+                    el.innerHTML = `
+                        <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('${dummyImg}')"></div>
+                        <div class="flex flex-col flex-1">
+                            <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">${doc.full_name}</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.specialization}</span>
+                                <span class="text-xs text-slate-400 font-medium">${doc.experience_years}y EXP</span>
+                            </div>
+                        </div>
+                        <div class="check-mark opacity-0 scale-50 transition-all duration-300 absolute right-5 text-primary bg-primary/10 rounded-full p-1 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
+                        </div>
+                    `;
+                    el.onclick = () => selectDoctor(doc.id, doc.full_name, el);
+                    container.appendChild(el);
+                });
+            });
+
+        function selectDoctor(id, name, el) {
+            state.doctor = id;
+            state.doctorName = name;
+            state.date = null;
+            state.startTime = null;
+            state.calendarDate = new Date();
+
+            document.querySelectorAll('.doctor-card').forEach(n => {
+                n.classList.remove('selected');
+                n.querySelector('.check-mark').classList.remove('opacity-100', 'scale-100');
+                n.querySelector('.check-mark').classList.add('opacity-0', 'scale-50');
+            });
+
+            el.classList.add('selected');
+            el.querySelector('.check-mark').classList.remove('opacity-0', 'scale-50');
+            el.querySelector('.check-mark').classList.add('opacity-100', 'scale-100');
+
+            const dtSection = document.getElementById('datetime-section');
+            dtSection.classList.remove('opacity-40', 'pointer-events-none', 'grayscale');
+
+            document.getElementById('time-slots').innerHTML = `
+                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span class="material-symbols-outlined mb-2 opacity-50 animate-bounce">place_item</span>
+                    <p class="text-sm italic">Please select a date from the calendar.</p>
+                </div>`;
+
+            updateSummary();
+
+            fetch(`/api/doctors/${id}/slots/`)
+                .then(res => res.json())
+                .then(slots => {
+                    // Structure: {date: "YYYY-MM-DD", start_time: "HH:MM:SS"}
+                    state.availableSlots = slots;
+                    renderCalendar();
+                });
+        }
+
+        function renderCalendar() {
+            const calDays = document.getElementById('calendar-days');
+            const viewYear = state.calendarDate.getFullYear();
+            const viewMonth = state.calendarDate.getMonth();
+
+            const headersHtml = `
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Sun</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Mon</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Tue</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Wed</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Thu</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Fri</div>
+                <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pb-3">Sat</div>
+            `;
+
+            let daysHtml = '';
+
+            document.getElementById('calendar-header').innerText = state.calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < firstDay; i++) { daysHtml += `<div></div>`; }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayDate = new Date(viewYear, viewMonth, d);
+                const ds = viewYear + "-" + String(viewMonth + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+                const hasSlots = state.availableSlots.some(s => s.date === ds);
+                const isPast = dayDate < today;
+
+                if (hasSlots) {
+                    daysHtml += `<div class="calendar-day p-2 text-sm text-slate-700 font-bold cursor-pointer relative" onclick="selectDate('${ds}', this)">
+                        <span class="relative z-10">${d}</span>
+                        <div class="absolute bottom-1 w-1 h-1 rounded-full bg-secondary"></div>
+                    </div>`;
+                } else {
+                    daysHtml += `<div class="calendar-day p-2 text-sm ${isPast ? 'text-slate-200 opacity-30' : 'text-slate-300 opacity-60'} font-medium">${d}</div>`;
+                }
+            }
+
+            calDays.innerHTML = headersHtml + daysHtml;
+        }
+
+        function changeMonth(delta) {
+            state.calendarDate.setMonth(state.calendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function selectDate(isoDate, el) {
+            state.date = isoDate;
+            state.startTime = null;
+
+            document.querySelectorAll('#calendar-days .calendar-day.cursor-pointer').forEach(n => {
+                n.classList.remove('selected');
+            });
+
+            el.classList.add('selected');
+            updateSummary();
+            renderTimeSlots();
+        }
+
+        function renderTimeSlots() {
+            const slotsContainer = document.getElementById('time-slots');
+            slotsContainer.innerHTML = '';
+
+            const slotsForDate = state.availableSlots.filter(s => s.date === state.date);
+
+            if (slotsForDate.length === 0) {
+                slotsContainer.innerHTML = `
+                    <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <p class="text-sm italic">No slots available.</p>
+                    </div>`;
+                return;
+            }
+
+            slotsForDate.forEach(slot => {
+                const btn = document.createElement('button');
+                // Trim seconds from HH:MM:SS
+                const timeLabel = slot.start_time.substring(0, 5);
+                btn.className = 'time-slot py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white transition-all flex items-center justify-center gap-2 group shadow-sm';
+                btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-primary transition-colors">schedule</span> ${timeLabel}`;
+                btn.onclick = () => selectTime(slot.start_time, btn);
+                slotsContainer.appendChild(btn);
+            });
+        }
+
+        function selectTime(timeStr, el) {
+            state.startTime = timeStr;
+
+            document.querySelectorAll('.time-slot').forEach(n => n.classList.remove('selected'));
+            el.classList.add('selected');
+            // Fix icon color when selected
+            el.querySelector('.material-symbols-outlined').classList.remove('text-slate-400', 'group-hover:text-primary');
+            el.querySelector('.material-symbols-outlined').classList.add('text-white');
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-doc').innerText = state.doctorName || 'Waiting for selection';
+            document.getElementById('summary-doc').className = state.doctorName ? 'text-sm font-bold text-slate-800 line-clamp-1' : 'text-sm font-medium text-slate-400 italic line-clamp-1';
+
+            const btnConfirm = document.getElementById('btn-confirm');
+            const btnBg = document.getElementById('btn-bg');
+            const btnText = document.getElementById('btn-text');
+
+            if (state.date && state.startTime) {
+                const prettyTime = state.startTime.substring(0, 5);
+                document.getElementById('summary-datetime').innerText = `${state.date} • ${prettyTime}`;
+                document.getElementById('summary-datetime').className = 'text-sm font-bold text-slate-800';
+
+                btnConfirm.disabled = false;
+                btnConfirm.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                btnConfirm.classList.add('text-white', 'shadow-lg', 'shadow-primary/30', 'hover:-translate-y-1');
+                btnBg.classList.remove('opacity-0');
+                btnBg.classList.add('opacity-100');
+                btnConfirm.onclick = confirmBooking;
+            } else {
+                document.getElementById('summary-datetime').innerText = 'Waiting for selection';
+                document.getElementById('summary-datetime').className = 'text-sm font-medium text-slate-400 italic';
+
+                btnConfirm.disabled = true;
+                btnConfirm.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                btnConfirm.classList.remove('text-white', 'shadow-lg', 'shadow-primary/30', 'hover:-translate-y-1');
+                btnBg.classList.remove('opacity-100');
+                btnBg.classList.add('opacity-0');
+                btnConfirm.onclick = null;
+            }
+        }
+
+        function confirmBooking() {
+            if (!state.doctor || !state.date || !state.startTime) return;
+
+            const btnConfirm = document.getElementById('btn-confirm');
+            const btnText = document.getElementById('btn-text');
+            btnConfirm.disabled = true;
+            btnText.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Processing...';
+
+            fetch('/appointments/api/book/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    doctor_id: state.doctor,
+                    date: state.date,
+                    start_time: state.startTime
+                })
+            }).then(res => res.json()).then(data => {
+                if (data.error) {
+                    showToast(data.error, true);
+                    updateSummary(); // Reset button
+                } else {
+                    showToast("Appointment Confirmed!", false);
+                    setTimeout(() => {
+                        window.location.href = '/appointments/patient/dashboard/';
+                    }, 1500);
+                }
+            }).catch(err => {
+                showToast('Something went wrong! Check connection.', true);
+                updateSummary(); // Reset button
+            });
+        }
+
+        renderCalendar();
+    </script>
+</body>
+
+</html>
