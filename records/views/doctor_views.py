@@ -95,27 +95,64 @@ def appointment_diagnosis(request, appointment_id):
 
 @user_passes_test(is_doctor)
 def doctor_schedule(request):
-    """View to show the doctor's weekly work schedule (Read-only)."""
-    from appointments.models import DoctorSchedule
-    schedule = DoctorSchedule.objects.filter(doctor=request.user).order_by('day_of_week', 'start_time')
-
-    schedule_by_day = {i: [] for i in range(7)}
-    for slot in schedule:
-        if 0 <= slot.day_of_week <= 6:
-            day_index = slot.day_of_week
-        elif slot.day_of_week == 7:
-            day_index = 6
-        elif 1 <= slot.day_of_week <= 7:
-            day_index = slot.day_of_week - 1
-        else:
-            continue
-        schedule_by_day[day_index].append(slot)
-
-    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    day_schedule = [(day, schedule_by_day[idx]) for idx, day in enumerate(weekdays)]
+    """View to show the doctor's live weekly work agenda (Booked appointments only)."""
+    from appointments.models import Appointment
+    from availabilitySlots.models import AppointmentSlot
+    from datetime import timedelta
+    
+    # 1. Calculate current week's dates (Monday to Sunday)
+    today = timezone.now().date()
+    monday = today - timedelta(days=today.weekday())
+    week_dates = [monday + timedelta(days=i) for i in range(7)]
+    
+    weekdays_names = [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    ]
+    
+    # 2. Fetch all booked slots for this doctor this week
+    booked_slots = AppointmentSlot.objects.filter(
+        doctor=request.user,
+        date__range=[monday, week_dates[-1]],
+        status='BOOKED'
+    ).order_by('date', 'start_time')
+    
+    # 3. Fetch corresponding Appointments to get patient details
+    appointments = Appointment.objects.filter(
+        doctor=request.user,
+        appointment_date__range=[monday, week_dates[-1]],
+        status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
+    ).select_related('patient')
+    
+    # Build a lookup map: (date, start_time) -> appointment object
+    appt_map = {(a.appointment_date, a.start_time): a for a in appointments}
+    
+    day_schedule = []
+    
+    for i, target_date in enumerate(week_dates):
+        day_name = weekdays_names[i]
+        active_slots = []
+        
+        # Filter slots for this specific date
+        for slot in booked_slots:
+            if slot.date == target_date:
+                appt = appt_map.get((slot.date, slot.start_time))
+                patient_name = "Unknown Patient"
+                if appt:
+                    patient_name = appt.patient.get_full_name() or appt.patient.username
+                
+                # Create a dictionary for template compatibility
+                active_slots.append({
+                    'start_time': slot.start_time,
+                    'end_time': slot.end_time,
+                    'patient_name': patient_name,
+                    'status': 'BOOKED'
+                })
+        
+        day_schedule.append((day_name, active_slots))
 
     return render(request, 'doctor/schedule.html', {
-        'day_schedule': day_schedule
+        'day_schedule': day_schedule,
+        'week_range': f"{monday.strftime('%b %d')} - {week_dates[-1].strftime('%b %d, %Y')}"
     })
 
 @user_passes_test(is_doctor)
