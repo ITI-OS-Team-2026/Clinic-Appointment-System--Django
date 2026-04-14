@@ -6,7 +6,7 @@ from availabilitySlots.models import AppointmentSlot
 @receiver(post_delete, sender=Appointment)
 def sync_slot_on_delete(sender, instance, **kwargs):
     """
-    When an Appointment is deleted, find the matching AppointmentSlot 
+    When an Appointment is deleted, find the matching AppointmentSlot
     and set its status back to 'AVAILABLE'.
     """
     AppointmentSlot.objects.filter(
@@ -18,7 +18,7 @@ def sync_slot_on_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=Appointment)
 def sync_slot_on_status_change(sender, instance, created, **kwargs):
     """
-    When an Appointment status changes to 'CANCELLED' or 'NO_SHOW', 
+    When an Appointment status changes to 'CANCELLED' or 'NO_SHOW',
     set the matching AppointmentSlot back to 'AVAILABLE'.
     """
     if instance.status in ['CANCELLED', 'NO_SHOW' ,"COMPLETED"]:
@@ -27,9 +27,7 @@ def sync_slot_on_status_change(sender, instance, created, **kwargs):
             date=instance.appointment_date,
             start_time=instance.start_time
         ).update(status='AVAILABLE')
-    
-    # Optional: If someone manually sets it back to CONFIRMED or REQUESTED, 
-    # we might want to set the slot to BOOKED.
+
     elif instance.status in ['REQUESTED', 'CONFIRMED', 'CHECKED_IN']:
         AppointmentSlot.objects.filter(
             doctor=instance.doctor,

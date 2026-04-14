@@ -13,7 +13,6 @@ def doctor_queue(request):
         appointment_date=today
     ).order_by('start_time')
 
-    # Calculate statistics
     stats = {
         'total': appointments.count(),
         'waiting': appointments.filter(status='CHECKED_IN').count(),
@@ -39,11 +38,10 @@ def booking_requests(request):
             appointment.status = 'CONFIRMED'
         elif action == 'decline':
             appointment.status = 'CANCELLED'
-        
+
         appointment.save()
         return redirect('booking_requests')
 
-    # Get all requested appointments for this doctor
     requests = Appointment.objects.filter(
         doctor=request.user,
         status='REQUESTED'
@@ -69,7 +67,6 @@ def appointment_diagnosis(request, appointment_id):
         prescriptions_json = request.POST.get('prescriptions_data')
 
         with transaction.atomic():
-            # Create the consultation record
             consultation = ConsultationRecord.objects.create(
                 appointment=appointment,
                 diagnosis=diagnosis,
@@ -77,7 +74,6 @@ def appointment_diagnosis(request, appointment_id):
                 requested_tests=requested_tests
             )
 
-            # Create prescriptions if provided
             if prescriptions_json:
                 prescriptions = json.loads(prescriptions_json)
                 for item in prescriptions:
@@ -88,7 +84,6 @@ def appointment_diagnosis(request, appointment_id):
                         duration=item.get('duration')
                     )
 
-            # Ensure appointment status is COMPLETED
             appointment.status = 'COMPLETED'
             appointment.save()
 
@@ -100,63 +95,32 @@ def appointment_diagnosis(request, appointment_id):
 
 @user_passes_test(is_doctor)
 def doctor_schedule(request):
-    from appointments.models import Appointment
-    from availabilitySlots.models import AppointmentSlot
-    from datetime import timedelta
-    
-    today = timezone.now().date()
-    monday = today - timedelta(days=today.weekday())
-    week_dates = [monday + timedelta(days=i) for i in range(7)]
-    
-    weekdays_names = [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-    ]
-    
-    booked_slots = AppointmentSlot.objects.filter(
-        doctor=request.user,
-        date__range=[monday, week_dates[-1]],
-        status='BOOKED'
-    ).order_by('date', 'start_time')
-    
-    appointments = Appointment.objects.filter(
-        doctor=request.user,
-        appointment_date__range=[monday, week_dates[-1]],
-        status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
-    ).select_related('patient')
-    
-    appt_map = {(a.appointment_date, a.start_time): a for a in appointments}
-    
-    day_schedule = []
-    
-    for i, target_date in enumerate(week_dates):
-        day_name = weekdays_names[i]
-        active_slots = []
-        
-        for slot in booked_slots:
-            if slot.date == target_date:
-                appt = appt_map.get((slot.date, slot.start_time))
-                patient_name = "Unknown Patient"
-                if appt:
-                    patient_name = appt.patient.get_full_name() or appt.patient.username
-                
-                active_slots.append({
-                    'start_time': slot.start_time,
-                    'end_time': slot.end_time,
-                    'patient_name': patient_name,
-                    'status': 'BOOKED'
-                })
-        
-        day_schedule.append((day_name, active_slots))
+    """View to show the doctor's weekly work schedule (Read-only)."""
+    from appointments.models import DoctorSchedule
+    schedule = DoctorSchedule.objects.filter(doctor=request.user).order_by('day_of_week', 'start_time')
+
+    schedule_by_day = {i: [] for i in range(7)}
+    for slot in schedule:
+        if 0 <= slot.day_of_week <= 6:
+            day_index = slot.day_of_week
+        elif slot.day_of_week == 7:
+            day_index = 6
+        elif 1 <= slot.day_of_week <= 7:
+            day_index = slot.day_of_week - 1
+        else:
+            continue
+        schedule_by_day[day_index].append(slot)
+
+    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    day_schedule = [(day, schedule_by_day[idx]) for idx, day in enumerate(weekdays)]
 
     return render(request, 'doctor/schedule.html', {
-        'day_schedule': day_schedule,
-        'week_range': f"{monday.strftime('%b %d')} - {week_dates[-1].strftime('%b %d, %Y')}"
+        'day_schedule': day_schedule
     })
 
 @user_passes_test(is_doctor)
 def doctor_profile(request):
     """View to show the doctor's professional profile (Read-only)."""
-    # Profile is created via signals, so it should exist.
     profile = getattr(request.user, 'doctor_profile', None)
     return render(request, 'doctor/profile.html', {
         'profile': profile,
@@ -171,41 +135,35 @@ def doctor_monthly_planner(request):
     from appointments.models import ScheduleException
     from availabilitySlots.services import generate_slots_for_date
 
-    # Get year and month from request or default to next month
     now = timezone.now()
     try:
         year = int(request.GET.get('year', now.year))
         month = int(request.GET.get('month', (now.month % 12) + 1))
-        # Handle December edge case for next month
         if now.month == 12 and not request.GET.get('year'):
             year = now.year + 1
     except (ValueError, TypeError):
         year, month = now.year, (now.month % 12) + 1
 
-    # Initialize context variables
     work_days_ids = []
     day_times = {}
     conflicts = []
 
-    # Check if this month is already finalized
     days_in_month = calendar.monthrange(year, month)[1]
     first_day = date(year, month, 1)
     last_day = date(year, month, days_in_month)
-    
+
     existing_exceptions = ScheduleException.objects.filter(
         doctor=request.user,
         exception_date__range=[first_day, last_day]
     ).order_by('exception_date')
-    
+
     is_finalized = existing_exceptions.exists()
     work_count = existing_exceptions.filter(is_day_off=False).count()
     off_count = existing_exceptions.filter(is_day_off=True).count()
 
-    # Pre-fill pattern from exceptions
     work_days_ids = []
-    day_times = {} # weekday -> {start, end}
+    day_times = {}
     if is_finalized:
-        # Get unique weekdays that are not off
         active_work_days = existing_exceptions.filter(is_day_off=False)
         for ex in active_work_days:
             wd = ex.exception_date.weekday()
@@ -218,18 +176,13 @@ def doctor_monthly_planner(request):
 
     if request.method == 'POST':
         if 'reset_month' in request.POST:
-            # Unlock for editing without deleting immediately to preserve form values
             is_finalized = False
-            # We don't redirect; we just fall through to the GET logic which will 
-            # now see is_finalized as False but still find the exceptions to pre-fill the form.
             from django.contrib import messages
             messages.info(request, f"Review and update your schedule for {calendar.month_name[month]}. Click Update when finished.")
         else:
-            # Finalize Pattern
             working_days = [int(d) for d in request.POST.getlist('working_days')]
-            work_days_ids = working_days # For re-rendering on conflict
-            
-            # 1. First Pass: Check for active appointment conflicts
+            work_days_ids = working_days
+
             from appointments.models import Appointment, AuditTrail
             conflicts = []
             for day in range(1, days_in_month + 1):
@@ -242,9 +195,8 @@ def doctor_monthly_planner(request):
                     )
                     if booked.exists():
                         conflicts.extend(list(booked))
-            
+
             if conflicts and not request.POST.get('confirm_conflicts'):
-                # Return with simple conflicts list for confirmation
                 for wd in working_days:
                     start = request.POST.get(f'start_time_{wd}', '09:00')
                     end = request.POST.get(f'end_time_{wd}', '17:00')
@@ -259,26 +211,23 @@ def doctor_monthly_planner(request):
                     'day_times': day_times,
                     'conflicts': conflicts
                 })
-            
-            # 2. Second Pass: Process confirmed cancellations
+
             if conflicts and request.POST.get('confirm_conflicts'):
                 from django.db import transaction
                 with transaction.atomic():
                     for apt in conflicts:
-                        # Audit Trail for cancellation
                         old_dt = timezone.datetime.combine(apt.appointment_date, apt.start_time)
                         if timezone.is_naive(old_dt): old_dt = timezone.make_aware(old_dt)
-                        
+
                         AuditTrail.objects.create(
                             appointment=apt, changed_by=request.user,
                             old_datetime=old_dt, new_datetime=old_dt,
                             reason="Monthly Schedule Update: Appointment cancelled due to doctor schedule change."
                         )
-                        
+
                         apt.status = 'CANCELLED'
                         apt.save()
 
-                        # Free slot
                         from availabilitySlots.models import AppointmentSlot
                         slot = AppointmentSlot.objects.filter(
                             doctor=request.user, date=apt.appointment_date, start_time=apt.start_time
@@ -287,12 +236,11 @@ def doctor_monthly_planner(request):
                             slot.status = 'AVAILABLE'
                             slot.save()
 
-            # Save Exceptions
             from availabilitySlots.models import AppointmentSlot
             for day in range(1, days_in_month + 1):
                 target_date = date(year, month, day)
                 weekday = target_date.weekday()
-                
+
                 if weekday in working_days:
                     start_str = request.POST.get(f'start_time_{weekday}', '09:00')
                     end_str = request.POST.get(f'end_time_{weekday}', '17:00')
@@ -308,7 +256,6 @@ def doctor_monthly_planner(request):
                         doctor=request.user, exception_date=target_date,
                         defaults={'is_day_off': True, 'start_time': None, 'end_time': None}
                     )
-                # Regenerate slots
                 generate_slots_for_date(request.user, target_date)
 
             from django.contrib import messages
@@ -331,6 +278,3 @@ def doctor_monthly_planner(request):
         'work_days_ids': work_days_ids,
         'day_times': day_times
     })
-
-
-

@@ -47,6 +47,13 @@
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
+          href="{% url 'user_management' %}"
+        >
+          <span class="material-symbols-outlined">people</span>
+          <span class="font-headline tracking-tight">Manage Users</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-200/50 transition-colors"
           href="{% url 'add_doctor' %}"
         >
           <span class="material-symbols-outlined">person_add</span>
@@ -97,8 +104,7 @@
       <div class="flex items-center gap-3 group cursor-pointer">
         <div class="text-right">
           <p class="text-xs font-bold font-headline text-on-surface">
-            {{ request.user.first_name }}
-            <span>{{ request.user.last_name|default:"Administrator" }}</span>
+            {{ request.user.first_name }} {{ request.user.last_name|default:"Administrator" }}
           </p>
           <p
             class="text-[10px] text-on-surface-variant uppercase tracking-wider"
@@ -207,8 +213,7 @@
                   <h4
                     class="text-sm font-extrabold text-on-surface font-headline"
                   >
-                    {{ patient.first_name }} {{
-                    patient.last_name|default:patient.username }}
+                    {{ patient.first_name }} {{patient.last_name|default:patient.username }}
                   </h4>
                   <p
                     class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter"

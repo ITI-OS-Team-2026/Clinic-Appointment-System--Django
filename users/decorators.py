@@ -20,4 +20,3 @@ def is_admin_role(user):
     if user.is_authenticated and user.role == 'ADMIN':
         return True
     raise PermissionDenied
-

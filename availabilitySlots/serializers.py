@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import AppointmentSlot
 
-
 class AppointmentSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppointmentSlot
