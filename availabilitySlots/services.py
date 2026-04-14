@@ -23,8 +23,11 @@ def generate_slots_for_date(doctor, target_date: date):
 
     except ScheduleException.DoesNotExist:
         day_of_week = target_date.weekday()
+        # Handle both 0-6 (Python) and 1-7 (ISO) conventions
+        # Monday: 0 or 1, Tuesday: 1 or 2, ... Sunday: 6 or 7
+        possible_values = [day_of_week, day_of_week + 1]
         schedule = DoctorSchedule.objects.filter(
-            doctor=doctor, day_of_week=day_of_week
+            doctor=doctor, day_of_week__in=possible_values
         ).first()
 
         if not schedule:
