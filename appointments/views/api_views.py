@@ -33,7 +33,6 @@ class AppointmentSearchView(APIView):
 
         queryset = Appointment.objects.all().select_related('patient', 'doctor')
 
-        # Filters
         doctor_id = request.query_params.get('doctor_id')
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')

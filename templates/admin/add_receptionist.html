@@ -95,8 +95,7 @@
           />
           <div class="overflow-hidden">
             <p class="text-xs font-bold text-on-surface truncate">
-              {{ request.user.first_name }} {{
-              request.user.last_name|default:"Administrator" }}
+              {{ request.user.first_name }} {{ request.user.last_name|default:"Administrator" }}
             </p>
             <p class="text-[10px] text-on-surface-variant">
               {{ request.user.email }}

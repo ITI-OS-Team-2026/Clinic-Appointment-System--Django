@@ -3,10 +3,9 @@ from .models import AppointmentSlot
 from appointments.models import DoctorSchedule, ScheduleException
 
 def generate_slots_for_date(doctor, target_date: date):
-    # Idempotency: Clear existing unbooked slots first to avoid duplicates or orphans
     AppointmentSlot.objects.filter(
-        doctor=doctor, 
-        date=target_date, 
+        doctor=doctor,
+        date=target_date,
         status='AVAILABLE'
     ).delete()
 
@@ -15,23 +14,22 @@ def generate_slots_for_date(doctor, target_date: date):
             doctor=doctor, exception_date=target_date
         )
         if exception.is_day_off:
-            return []   
+            return []
 
         start_time = exception.start_time
         end_time   = exception.end_time
-        slot_duration = 30 # default
+        slot_duration = 30
         buffer        = 5
 
     except ScheduleException.DoesNotExist:
         day_of_week = target_date.weekday()
-        # Find schedule from appointments app
         schedule = DoctorSchedule.objects.filter(
             doctor=doctor, day_of_week=day_of_week
         ).first()
-        
+
         if not schedule:
             return []
-            
+
         start_time    = schedule.start_time
         end_time      = schedule.end_time
         slot_duration = schedule.session_duration_mins
@@ -45,7 +43,6 @@ def generate_slots_for_date(doctor, target_date: date):
 
     while current + slot_delta <= shift_end:
         slot_end = current + slot_delta
-        # Check if an appointment already exists for this slot to avoid "Ghost" available slots
         from appointments.models import Appointment
         exists = Appointment.objects.filter(
             doctor=doctor,
@@ -53,7 +50,7 @@ def generate_slots_for_date(doctor, target_date: date):
             start_time=current.time(),
             status__in=['REQUESTED', 'CONFIRMED', 'CHECKED_IN']
         ).exists()
-        
+
         initial_status = 'BOOKED' if exists else 'AVAILABLE'
 
         slot, created = AppointmentSlot.objects.get_or_create(
@@ -69,7 +66,6 @@ def generate_slots_for_date(doctor, target_date: date):
             slots_created.append(slot)
         current = slot_end + buffer_delta
     return slots_created
-
 
 def generate_slots_for_range(doctor, from_date: date, to_date: date):
     all_slots = []

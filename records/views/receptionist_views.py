@@ -4,7 +4,6 @@ from django.utils import timezone
 from users.decorators import is_receptionist
 from appointments.models import Appointment
 
-
 @user_passes_test(is_receptionist, login_url='/users/login/')
 def receptionist_queue(request):
     today = timezone.now().date()
@@ -39,8 +38,7 @@ def receptionist_profile(request):
         user.last_name = request.POST.get('last_name', user.last_name)
         user.save()
         return redirect('receptionist_profile')
-        
+
     return render(request, 'receptionist/profile.html', {
         'user': user
     })
-

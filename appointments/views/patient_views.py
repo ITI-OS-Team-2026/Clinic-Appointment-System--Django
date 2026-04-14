@@ -41,40 +41,39 @@ def patient_reschedule_appointment(request, appointment_id):
             new_date = request.POST.get('new_date')
             new_start = request.POST.get('new_start_time')
             reason = request.POST.get('reason', 'Rescheduled by patient')
-            
+
             if new_date and new_start:
                 new_slot = AppointmentSlot.objects.filter(
                     doctor=appt.doctor, date=new_date, start_time=new_start, status='AVAILABLE'
                 ).first()
-                
+
                 if new_slot:
                     old_dt = datetime.datetime.combine(appt.appointment_date, appt.start_time)
                     new_dt = datetime.datetime.combine(new_slot.date, new_slot.start_time)
                     if timezone.is_naive(old_dt): old_dt = timezone.make_aware(old_dt)
                     if timezone.is_naive(new_dt): new_dt = timezone.make_aware(new_dt)
-                    
+
                     old_slot = AppointmentSlot.objects.filter(
                         doctor=appt.doctor, date=appt.appointment_date, start_time=appt.start_time
                     ).first()
                     if old_slot:
                         old_slot.status = 'AVAILABLE'
                         old_slot.save()
-                        
+
                     new_slot.status = 'BOOKED'
                     new_slot.save()
-                    
+
                     AuditTrail.objects.create(
                         appointment=appt, changed_by=request.user,
                         old_datetime=old_dt, new_datetime=new_dt, reason=reason
                     )
-                    
+
                     appt.appointment_date = new_slot.date
                     appt.start_time = new_slot.start_time
                     appt.end_time = new_slot.end_time
                     appt.save()
-                    
-    return redirect('patient_dashboard')
 
+    return redirect('patient_dashboard')
 
 @user_passes_test(is_patient, login_url='/users/login/')
 def patient_book_appointment(request):
