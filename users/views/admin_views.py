@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Q
 from ..decorators import is_admin_role
 from users.models import User, DoctorProfile
 import csv
@@ -220,3 +221,108 @@ def export_analytics_csv(request):
         ])
     
     return response
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin_role)
+def user_management(request):
+    """Display all users with search and role filtering"""
+    users = User.objects.all().order_by('-date_joined')
+    
+    # Search by name or email
+    search_query = request.GET.get('search', '')
+    if search_query:
+        users = users.filter(
+            Q(first_name__icontains=search_query) | 
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(username__icontains=search_query)
+        )
+    
+    # Filter by role
+    role_filter = request.GET.get('role', '')
+    if role_filter:
+        users = users.filter(role=role_filter)
+    
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(users, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    role_choices = User.ROLE_CHOICES
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'role_filter': role_filter,
+        'role_choices': role_choices,
+    }
+    return render(request, 'admin/user_management.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin_role)
+def user_detail(request, user_id):
+    """View and edit user details"""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('user_management')
+    
+    if request.method == 'POST':
+        user.email = request.POST.get('email', user.email)
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        
+        # Toggle is_active status
+        is_active = request.POST.get('is_active') == 'on'
+        user.is_active = is_active
+        
+        user.save()
+        messages.success(request, f"User {user.username} was successfully updated.")
+        return redirect('user_management')
+    
+    # Get profile data if available
+    profile_data = None
+    if user.role == 'DOCTOR' and hasattr(user, 'doctor_profile'):
+        profile_data = user.doctor_profile
+    elif user.role == 'PATIENT' and hasattr(user, 'patient_profile'):
+        profile_data = user.patient_profile
+    
+    context = {
+        'user': user,
+        'profile_data': profile_data,
+    }
+    return render(request, 'admin/user_detail.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin_role)
+def deactivate_user(request, user_id):
+    """Deactivate a user account"""
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = False
+        user.save()
+        messages.success(request, f"User {user.username} has been deactivated.")
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+    
+    return redirect('user_management')
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin_role)
+def activate_user(request, user_id):
+    """Activate a user account"""
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = True
+        user.save()
+        messages.success(request, f"User {user.username} has been activated.")
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+    
+    return redirect('user_management')

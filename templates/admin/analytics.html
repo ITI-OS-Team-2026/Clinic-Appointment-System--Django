@@ -97,8 +97,7 @@
       <div class="flex items-center gap-3 group cursor-pointer">
         <div class="text-right">
           <p class="text-xs font-bold font-headline text-on-surface">
-            {{ request.user.first_name }} {{
-            request.user.last_name|default:"Administrator" }}
+            {{ request.user.first_name }} {{ request.user.last_name|default:"Administrator" }}
           </p>
           <p
             class="text-[10px] text-on-surface-variant uppercase tracking-wider"
@@ -372,8 +371,7 @@
                   Average Patients/Doctor
                 </p>
                 <p class="text-2xl font-bold font-headline mt-1">
-                  {% if total_doctors > 0 %} {% widthratio total_patients
-                  total_doctors 1 %} {% else %} 0 {% endif %}
+                  {% if total_doctors > 0 %} {% widthratio total_patients total_doctors 1 %} {% else %} 0 {% endif %}
                 </p>
               </div>
             </div>
@@ -416,8 +414,7 @@
                       {{ doctor.first_name|first }}{{ doctor.last_name|first }}
                     </div>
                     <span class="text-sm font-medium text-on-surface">
-                      {{ doctor.first_name }} {{
-                      doctor.last_name|default:doctor.username }}
+                      {{ doctor.first_name }} {{ doctor.last_name|default:doctor.username }}
                     </span>
                   </div>
                 </td>
