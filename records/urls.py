@@ -10,10 +10,10 @@ urlpatterns = [
     path('doctor/schedule/', doctor_schedule, name='doctor_schedule'),
     path('doctor/profile/', doctor_profile, name='doctor_profile'),
     path('doctor/month-planner/', doctor_monthly_planner, name='doctor_monthly_planner'),
-    
+
     path('receptionist/queue/', receptionist_queue, name='receptionist_queue'),
     path('receptionist/management/', appointment_management, name='receptionist_management'),
     path('receptionist/profile/', receptionist_profile, name='receptionist_profile'),
-    
+
     path('patient/consultation/<int:appointment_id>/', patient_consultation_summary, name='patient_consultation_summary'),
 ]

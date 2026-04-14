@@ -3,9 +3,6 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-
-
-
 class AppointmentSlot(models.Model):
     """A concrete bookable slot generated from the schedule"""
     STATUS_CHOICES = [
