@@ -278,6 +278,10 @@
                     placeholder="Choose a unique username"
                     type="text"
                     required
+                    minlength="3"
+                    maxlength="30"
+                    pattern="^[a-zA-Z0-9_]+$"
+                    title="Username must be 3-30 characters, alphanumeric and underscore only"
                   />
                 </div>
                 <div>
@@ -291,6 +295,9 @@
                     placeholder="••••••••"
                     type="password"
                     required
+                    minlength="8"
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$"
+                    title="Password must be at least 8 characters with uppercase, lowercase, number, and special character"
                   />
                 </div>
                 <div>
@@ -304,6 +311,7 @@
                     placeholder="••••••••"
                     type="password"
                     required
+                    minlength="8"
                   />
                 </div>
               </div>
