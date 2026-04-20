@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 import datetime
+from django.core import signing
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils import timezone
@@ -127,22 +128,20 @@ class BookAppointmentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        doctor_id = request.data.get('doctor_id')
-        date_str = request.data.get('date')
-        start_time_str = request.data.get('start_time')
+        booking_token = request.POST.get('booking_token') or request.data.get('booking_token')
 
-        if not all([doctor_id, date_str, start_time_str]):
-            return Response({"error": "Missing doctor_id, date, or start_time."}, status=status.HTTP_400_BAD_REQUEST)
+        if not booking_token:
+            return Response({"error": "Missing booking_token."}, status=status.HTTP_400_BAD_REQUEST)
 
-        slot = AppointmentSlot.objects.filter(
-            doctor_id=doctor_id,
-            date=date_str,
-            start_time=start_time_str,
-            status='AVAILABLE'
-        ).first()
+        try:
+            data = signing.loads(booking_token, salt='booking', max_age=3600)
+        except signing.BadSignature:
+            return Response({'error': 'Invalid or expired booking token.'}, status=400)
 
-        if not slot:
-            return Response({"error": "This slot is not available."}, status=status.HTTP_400_BAD_REQUEST)
+        if data.get('user_id') != request.user.id:
+            return Response({'error': 'Invalid request.'}, status=400)
+
+        slot = get_object_or_404(AppointmentSlot, id=data.get('slot_id'), status='AVAILABLE')
 
         if Appointment.objects.filter(patient=request.user, appointment_date=slot.date, start_time=slot.start_time).exists():
             return Response({"error": "You already have an appointment scheduled for this time."}, status=status.HTTP_400_BAD_REQUEST)

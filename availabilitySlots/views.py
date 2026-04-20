@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from datetime import date, timedelta
+from django.core import signing
 from .models import AppointmentSlot
 from .serializers import AppointmentSlotSerializer
 from .services import generate_slots_for_range
@@ -40,4 +41,11 @@ class DoctorAvailableSlotsView(APIView):
         filtered_slots = [s for s in slots if (s.date, s.start_time) not in active_set]
 
         serializer = AppointmentSlotSerializer(filtered_slots, many=True)
-        return Response(serializer.data)
+        slots_with_tokens = []
+        for slot_obj, slot_data in zip(filtered_slots, serializer.data):
+            token = signing.dumps({'slot_id': slot_obj.id, 'user_id': request.user.id}, salt='booking')
+            slot_payload = dict(slot_data)
+            slot_payload['booking_token'] = token
+            slots_with_tokens.append(slot_payload)
+
+        return Response(slots_with_tokens)
