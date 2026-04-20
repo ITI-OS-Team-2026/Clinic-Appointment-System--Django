@@ -204,53 +204,65 @@ from django.contrib.auth.decorators import login_required
 
 def edit_patient_profile(request, profile):
     from datetime import datetime, date
+    errors = []
 
+    # Get values from POST
     first_name = request.POST.get('first_name', '').strip()
     last_name = request.POST.get('last_name', '').strip()
-
-    if first_name:
-        if not re.match(r'^[a-zA-Z\s]+$', first_name):
-            return False, 'First name must contain letters only'
-        profile.user.first_name = first_name
-
-    if last_name:
-        if not re.match(r'^[a-zA-Z\s]+$', last_name):
-            return False, 'Last name must contain letters only'
-        profile.user.last_name = last_name
-
     contact_number = request.POST.get('contact_number', '').strip()
-    if contact_number:
-        if not re.match(r'^\+?\d+$', contact_number):
-            return False, 'Phone number must contain numbers only'
-        profile.contact_number = contact_number
-
     address = request.POST.get('address', '').strip()
-    if address:
-        profile.address = address
-
     blood_type = request.POST.get('blood_type', '').strip()
-    if blood_type:
-        profile.blood_type = blood_type
-
     gender = request.POST.get('gender', '').strip()
-    if gender:
-        profile.gender = gender
-
     dob = request.POST.get('date_of_birth', '').strip()
+
+    # PHASE 1: Validate only
+    if not first_name:
+        errors.append('First name cannot be empty')
+    elif not re.match(r'^[a-zA-Z\s]+$', first_name):
+        errors.append('First name must contain letters only')
+
+    if not last_name:
+        errors.append('Last name cannot be empty')
+    elif not re.match(r'^[a-zA-Z\s]+$', last_name):
+        errors.append('Last name must contain letters only')
+
+    if not contact_number:
+        errors.append('Contact number cannot be empty')
+    elif not re.match(r'^\+?\d+$', contact_number):
+        errors.append('Phone number must contain numbers only')
+
+    if not address:
+        errors.append('Address cannot be empty')
+
+    dob_date = None
     if dob:
         try:
             dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
             if dob_date > date.today():
-                return False, 'Date of birth cannot be in the future'
-            profile.date_of_birth = dob_date
+                errors.append('Date of birth cannot be in the future')
         except ValueError:
-            return False, 'Invalid date format'
+            errors.append('Invalid date format')
+
+    if errors:
+        return False, errors
+
+    # PHASE 2: Update object only after validation passes
+    profile.user.first_name = first_name
+    profile.user.last_name = last_name
+    profile.contact_number = contact_number
+    profile.address = address
+    if blood_type:
+        profile.blood_type = blood_type
+    if gender:
+        profile.gender = gender
+    if dob_date:
+        profile.date_of_birth = dob_date
 
     with transaction.atomic():
-        if first_name or last_name:
-            profile.user.save()
+        profile.user.save()
         profile.save()
-    return True, ''
+
+    return True, []
 
 @login_required(login_url='/users/login/')
 def patient_profile(request):
@@ -260,12 +272,13 @@ def patient_profile(request):
     profile = request.user.patient_profile
 
     if request.method == 'POST':
-        success, error_message = edit_patient_profile(request, profile)
+        success, errors = edit_patient_profile(request, profile)
         if success:
             messages.success(request, 'Profile updated successfully!')
             return redirect('patient_profile')
         else:
-            messages.error(request, error_message)
+            for error_message in errors:
+                messages.error(request, error_message)
             return render(request, 'patient/profile.html', {
                 'profile': profile,
                 'edit_mode': True
