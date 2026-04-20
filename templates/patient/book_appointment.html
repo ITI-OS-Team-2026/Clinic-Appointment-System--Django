@@ -191,6 +191,10 @@
                             <h2 class="text-2xl font-headline font-bold text-slate-900">Select Date & Time</h2>
                         </div>
 
+                        <div id="booking-error"
+                            class="hidden mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                        </div>
+
                         <div class="bg-white rounded-[2rem] p-6 md:p-10 shadow-sm border border-slate-200">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
 
@@ -339,6 +343,8 @@
             doctorName: null,
             date: null,
             startTime: null,
+            bookingToken: null,
+            slotId: null,
             availableSlots: [],
             calendarDate: new Date()
         };
@@ -362,14 +368,99 @@
         // Show Toast
         function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
-            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMessage.innerText = msg;
+            toastIcon.innerText = isError ? 'error' : 'check_circle';
+
+            if (isError) {
+                toast.classList.remove('bg-slate-900', 'text-white');
+                toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                toastIcon.className = 'material-symbols-outlined text-red-500';
+                toastMessage.className = 'font-bold text-sm text-red-700';
+            } else {
+                toast.classList.remove('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                toast.classList.add('bg-slate-900', 'text-white');
+                toastIcon.className = 'material-symbols-outlined text-secondary';
+                toastMessage.className = 'font-medium text-sm text-white';
+            }
 
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 4000);
+        }
+
+        function showBookingError(message) {
+            const bookingError = document.getElementById('booking-error');
+            bookingError.innerText = message;
+            bookingError.classList.remove('hidden');
+        }
+
+        function clearBookingError() {
+            const bookingError = document.getElementById('booking-error');
+            bookingError.innerText = '';
+            bookingError.classList.add('hidden');
+        }
+
+        // --- CALENDAR INTEGRITY WATCHER ---
+        const calendarObserver = new MutationObserver(() => {
+            // 1. Immediately disconnect
+            calendarObserver.disconnect();
+
+            // 2. Reset state
+            state.date = null;
+            state.startTime = null;
+            state.slotId = null;
+            state.bookingToken = null;
+
+            // 3. Directly set time-slots innerHTML to placeholder
+            document.getElementById('time-slots').innerHTML = `
+                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span class="material-symbols-outlined mb-2 opacity-50">calendar_month</span>
+                    <p class="text-sm italic">Select a highlighted date.</p>
+                </div>`;
+
+            // 4. Force disable the confirm button directly
+            const btnConfirm = document.getElementById('btn-confirm');
+            const btnBg = document.getElementById('btn-bg');
+            const btnText = document.getElementById('btn-text');
+            btnConfirm.disabled = true;
+            btnConfirm.onclick = null;
+            btnConfirm.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+            btnConfirm.classList.remove('text-white', 'shadow-lg', 'shadow-primary/30', 'hover:-translate-y-1');
+            btnBg.classList.remove('opacity-100');
+            btnBg.classList.add('opacity-0');
+            btnText.innerHTML = 'Confirm Booking <span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>';
+
+            // 5. Update summary display
+            document.getElementById('summary-datetime').innerText = 'Waiting for selection';
+            document.getElementById('summary-datetime').className = 'text-sm font-medium text-slate-400 italic';
+
+            // 6. Re-render calendar to replace stale elements/handlers
+            renderCalendar();
+        });
+
+        function startObservingCalendar() {
+            const target = document.getElementById('calendar-days');
+            if (target) {
+                calendarObserver.observe(target, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    characterData: true
+                });
+            }
+        }
+        // --- END WATCHER ---
+
+        function renderSelectDatePlaceholder() {
+            document.getElementById('time-slots').innerHTML = `
+                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span class="material-symbols-outlined mb-2 opacity-50">calendar_month</span>
+                    <p class="text-sm italic">Select a highlighted date.</p>
+                </div>`;
         }
 
         // Fetch Doctors on load
@@ -414,7 +505,10 @@
             state.doctorName = name;
             state.date = null;
             state.startTime = null;
+            state.bookingToken = null;
+            state.slotId = null;
             state.calendarDate = new Date();
+            clearBookingError();
 
             document.querySelectorAll('.doctor-card').forEach(n => {
                 n.classList.remove('selected');
@@ -429,11 +523,7 @@
             const dtSection = document.getElementById('datetime-section');
             dtSection.classList.remove('opacity-40', 'pointer-events-none', 'grayscale');
 
-            document.getElementById('time-slots').innerHTML = `
-                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <span class="material-symbols-outlined mb-2 opacity-50 animate-bounce">place_item</span>
-                    <p class="text-sm italic">Please select a date from the calendar.</p>
-                </div>`;
+            renderSelectDatePlaceholder();
 
             updateSummary();
 
@@ -447,6 +537,7 @@
         }
 
         function renderCalendar() {
+            calendarObserver.disconnect();
             const calDays = document.getElementById('calendar-days');
             const viewYear = state.calendarDate.getFullYear();
             const viewMonth = state.calendarDate.getMonth();
@@ -489,6 +580,7 @@
             }
 
             calDays.innerHTML = headersHtml + daysHtml;
+            startObservingCalendar();
         }
 
         function changeMonth(delta) {
@@ -497,8 +589,12 @@
         }
 
         function selectDate(isoDate, el) {
+            calendarObserver.disconnect();
             state.date = isoDate;
             state.startTime = null;
+            state.bookingToken = null;
+            state.slotId = null;
+            clearBookingError();
 
             document.querySelectorAll('#calendar-days .calendar-day.cursor-pointer').forEach(n => {
                 n.classList.remove('selected');
@@ -507,6 +603,7 @@
             el.classList.add('selected');
             updateSummary();
             renderTimeSlots();
+            startObservingCalendar();
         }
 
         function renderTimeSlots() {
@@ -529,13 +626,16 @@
                 const timeLabel = slot.start_time.substring(0, 5);
                 btn.className = 'time-slot py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white transition-all flex items-center justify-center gap-2 group shadow-sm';
                 btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-primary transition-colors">schedule</span> ${timeLabel}`;
-                btn.onclick = () => selectTime(slot.start_time, btn);
+                btn.onclick = () => selectTime(slot, btn);
                 slotsContainer.appendChild(btn);
             });
         }
 
-        function selectTime(timeStr, el) {
-            state.startTime = timeStr;
+        function selectTime(slot, el) {
+            state.startTime = slot.start_time;
+            state.bookingToken = slot.booking_token;
+            state.slotId = slot.id;
+            clearBookingError();
 
             document.querySelectorAll('.time-slot').forEach(n => n.classList.remove('selected'));
             el.classList.add('selected');
@@ -554,7 +654,10 @@
             const btnBg = document.getElementById('btn-bg');
             const btnText = document.getElementById('btn-text');
 
-            if (state.date && state.startTime) {
+            btnText.innerHTML = `Confirm Booking
+                    <span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>`;
+
+            if (state.date && state.startTime && state.bookingToken && state.slotId) {
                 const prettyTime = state.startTime.substring(0, 5);
                 document.getElementById('summary-datetime').innerText = `${state.date} • ${prettyTime}`;
                 document.getElementById('summary-datetime').className = 'text-sm font-bold text-slate-800';
@@ -578,36 +681,54 @@
             }
         }
 
-        function confirmBooking() {
-            if (!state.doctor || !state.date || !state.startTime) return;
+        async function confirmBooking() {
+            if (!state.doctor || !state.date || !state.startTime || !state.bookingToken || !state.slotId) return;
 
             const btnConfirm = document.getElementById('btn-confirm');
             const btnText = document.getElementById('btn-text');
-            btnConfirm.disabled = true;
-            btnText.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Processing...';
 
-            fetch('/appointments/api/book/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    doctor_id: state.doctor,
-                    date: state.date,
-                    start_time: state.startTime
-                })
-            }).then(res => res.json()).then(data => {
-                if (data.error) {
-                    showToast(data.error, true);
-                    updateSummary(); // Reset button
+            clearBookingError();
+
+            try {
+                btnConfirm.disabled = true;
+                btnText.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Processing...';
+
+                const res = await fetch('/appointments/api/book/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_token: state.bookingToken
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    const errorMessage = data.error || 'Unable to complete booking. Please try again.';
+                    showBookingError(errorMessage);
+                    showToast(errorMessage, true);
+                    state.startTime = null;
+                    state.bookingToken = null;
+                    state.slotId = null;
+                    renderTimeSlots();
+                    updateSummary();
+                    return;
                 } else {
+                    clearBookingError();
                     showToast("Appointment Confirmed!", false);
                     setTimeout(() => {
                         window.location.href = '/appointments/patient/dashboard/';
                     }, 1500);
                 }
-            }).catch(err => {
+            } catch (err) {
+                showBookingError('Something went wrong! Check connection and try again.');
                 showToast('Something went wrong! Check connection.', true);
-                updateSummary(); // Reset button
-            });
+                state.startTime = null;
+                state.bookingToken = null;
+                state.slotId = null;
+                renderTimeSlots();
+            } finally {
+                updateSummary();
+            }
         }
 
         renderCalendar();
