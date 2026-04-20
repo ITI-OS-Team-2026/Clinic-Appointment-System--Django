@@ -3,6 +3,7 @@ import re
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.db import transaction
 from users.models import User, PatientProfile
 
 def patient_register(request):
@@ -110,23 +111,24 @@ def patient_register(request):
             return render(request, 'auth/register.html', {'form_data': form_data, 'field_errors': field_errors})
 
         try:
-            user = User.objects.create_user(username=u, email=e, password=p, role='PATIENT', first_name=first_name, last_name=last_name)
+            with transaction.atomic():
+                user = User.objects.create_user(username=u, email=e, password=p, role='PATIENT', first_name=first_name, last_name=last_name)
 
-            PatientProfile.objects.create(
-                user=user,
-                date_of_birth=dob,
-                blood_type=blood,
-                gender=gender,
-                address=address,
-                contact_number=phone
-            )
-            
-            messages.success(request, 'Account created successfully! You are now logged in.')
-            login(request, user)
-            return redirect_based_on_role(request)
+                PatientProfile.objects.create(
+                    user=user,
+                    date_of_birth=dob,
+                    blood_type=blood,
+                    gender=gender,
+                    address=address,
+                    contact_number=phone
+                )
         except Exception as e:
             messages.error(request, f'An error occurred during registration: {str(e)}')
             return render(request, 'auth/register.html', {'form_data': form_data})
+
+        messages.success(request, 'Account created successfully! You are now logged in.')
+        login(request, user)
+        return redirect_based_on_role(request)
 
     return render(request, 'auth/register.html')
 
@@ -216,9 +218,6 @@ def edit_patient_profile(request, profile):
             return False, 'Last name must contain letters only'
         profile.user.last_name = last_name
 
-    if first_name or last_name:
-        profile.user.save()
-
     contact_number = request.POST.get('contact_number', '').strip()
     if contact_number:
         if not re.match(r'^\+?\d+$', contact_number):
@@ -247,7 +246,10 @@ def edit_patient_profile(request, profile):
         except ValueError:
             return False, 'Invalid date format'
 
-    profile.save()
+    with transaction.atomic():
+        if first_name or last_name:
+            profile.user.save()
+        profile.save()
     return True, ''
 
 @login_required(login_url='/users/login/')
