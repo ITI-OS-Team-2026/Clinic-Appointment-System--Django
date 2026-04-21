@@ -34,6 +34,29 @@
    ```bash
    pip install -r requirements.txt
    ```
+4. **Environment Configuration:**
+   Copy the example environment file to create your own local configuration:
+   ```bash
+   cp env.example .env
+   ```
+   Open the `.env` file and fill in the required values (like `SECRET_KEY`, `DEBUG`, etc.).
+
+### What typically goes in `env.example`:
+Make sure your `env.example` contains the required settings with dummy values. For this project, it looks like this:
+
+```env
+# Django standard settings
+SECRET_KEY=your_secret_key
+
+# Database Settings (MySQL)
+DB_NAME=clinic_db
+DB_USER=root
+DB_PASSWORD=your_password_here
+
+# Email Configuration
+EMAIL_USER=your_email_here
+EMAIL_PASS=app_password_here
+```
 
 ### Frontend / UI Setup
 This project uses Tailwind CSS for its user interface. Install the necessary frontend dependencies by running:
@@ -42,7 +65,12 @@ python manage.py tailwind install
 ```
 
 ### Database Setup
-1. **Run migrations:**
+1. **Create the MySQL database:**
+   Ensure MySQL is running and create the database specified in your `.env` file before migrating:
+   ```sql
+   CREATE DATABASE clinic_db;
+   ```
+2. **Run migrations:**
    ```bash
    python manage.py migrate
    ```
