@@ -4,6 +4,54 @@
 
 ---
 
+## 🚀 Setup & Run Instructions
+
+### Prerequisites
+- Python 3.10+
+- pip (Python package installer)
+
+### Installation Steps
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd Clinic-Appointment-System--Django
+   ```
+2. **Create and activate a virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Database Setup
+1. **Run migrations:**
+   ```bash
+   python manage.py migrate
+   ```
+2. **Create a superuser:**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+### Sample Data (Seeding)
+To quickly populate the system for testing, run the seed command. This will add 20 doctors, availability slots, and test accounts:
+```bash
+python manage.py seed_clean_system
+```
+
+### Running the Server
+1. **Start the development server:**
+   ```bash
+   python manage.py runserver
+   ```
+2. **Access the application:**
+   Open your browser and navigate to [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+---
+
 ## Table of Contents
 
 - [Authentication Pages](#authentication-pages)
