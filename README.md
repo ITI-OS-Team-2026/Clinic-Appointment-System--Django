@@ -46,10 +46,6 @@ python manage.py tailwind install
    ```bash
    python manage.py migrate
    ```
-2. **Create a superuser:**
-   ```bash
-   python manage.py createsuperuser
-   ```
 
 ### Sample Data (Seeding)
 To quickly populate the system for testing, run the seed command. This will add 20 doctors, availability slots, and test accounts:
