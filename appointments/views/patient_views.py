@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from users.decorators import is_patient
 from appointments.models import Appointment, AuditTrail
-from users.models import PatientProfile
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from users.models import PatientProfile, DoctorProfile
 from availabilitySlots.models import AppointmentSlot
 from django.utils import timezone
 import datetime
@@ -77,4 +78,30 @@ def patient_reschedule_appointment(request, appointment_id):
 
 @user_passes_test(is_patient, login_url='/users/login/')
 def patient_book_appointment(request):
-    return render(request, 'patient/book_appointment.html')
+    specialty = request.GET.get('specialty', '')
+    page = request.GET.get('page', 1)
+
+    doctors = DoctorProfile.objects.select_related('user').all()
+    
+    specialties = list(DoctorProfile.objects.values_list('specialization', flat=True).distinct())
+    specialties = [s for s in specialties if s]
+    
+    if specialty:
+        doctors = doctors.filter(specialization__iexact=specialty)
+        
+    paginator = Paginator(doctors, 8)
+    
+    try:
+        doctors_page = paginator.page(page)
+    except PageNotAnInteger:
+        doctors_page = paginator.page(1)
+    except EmptyPage:
+        doctors_page = paginator.page(paginator.num_pages)
+        
+    context = {
+        'doctors_page': doctors_page,
+        'specialties': specialties,
+        'current_specialty': specialty,
+        'is_paginated': doctors_page.has_other_pages(),
+    }
+    return render(request, 'patient/book_appointment.html', context)
