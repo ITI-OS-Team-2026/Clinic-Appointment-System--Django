@@ -181,10 +181,13 @@
                         </div>
                         <div id="doctors-container" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {% for doc in doctors_page %}
-                            <div class="doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group" onclick="selectDoctor({{ doc.user.id }}, 'Dr. {{ doc.user.get_full_name|default:doc.user.username|escapejs }}', this)">
-                                <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('https://ui-avatars.com/api/?name=Dr.+{{ doc.user.get_full_name|default:doc.user.username|urlencode }}&background=b7eaff&color=005a70&size=128')"></div>
+                            {% with doc_name=doc.user.get_full_name|default:doc.user.username %}
+                            {% with safe_name=doc_name|urlencode %}
+                            {% with avatar_url="https://ui-avatars.com/api/?name="|add:safe_name|add:"&background=b7eaff&color=005a70&size=128" %}
+                            <div class="doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group" onclick="selectDoctor('{{ doc.user.id }}', 'Dr. {{ doc_name|escapejs }}', this)">
+                                <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('{{ avatar_url }}')"></div>
                                 <div class="flex flex-col flex-1">
-                                    <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">Dr. {{ doc.user.get_full_name|default:doc.user.username }}</span>
+                                    <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">Dr. {{ doc_name }}</span>
                                     <div class="flex items-center gap-2 mt-1">
                                         <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">{{ doc.specialization }}</span>
                                         <span class="text-xs text-slate-400 font-medium">{{ doc.experience_years }}y EXP</span>
@@ -194,6 +197,9 @@
                                     <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
                                 </div>
                             </div>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endwith %}
                             {% empty %}
                             <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
                                 <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">person_off</span>
