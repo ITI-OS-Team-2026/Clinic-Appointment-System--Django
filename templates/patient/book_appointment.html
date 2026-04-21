@@ -165,20 +165,64 @@
 
                     <!-- 1. Select Doctor -->
                     <section>
-                        <div class="flex items-center gap-4 mb-6">
-                            <div
-                                class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">
-                                1</div>
-                            <h2 class="text-2xl font-headline font-bold text-slate-900">Choose Your Specialist</h2>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">1</div>
+                                <h2 class="text-2xl font-headline font-bold text-slate-900">Choose Your Specialist</h2>
+                            </div>
+                            <form method="GET" class="flex gap-3 items-center">
+                                <select name="specialty" class="bg-white border-slate-200 rounded-xl py-2 pl-4 pr-10 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm cursor-pointer" onchange="this.form.submit()">
+                                    <option value="">All Specialties</option>
+                                    {% for spec in specialties %}
+                                    <option value="{{ spec }}" {% if spec == current_specialty %}selected{% endif %}>{{ spec }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
                         </div>
                         <div id="doctors-container" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div
-                                class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                                <span
-                                    class="material-symbols-outlined text-4xl text-slate-300 animate-spin mb-2">refresh</span>
-                                <p class="text-slate-500 font-medium">Loading elite specialists...</p>
+                            {% for doc in doctors_page %}
+                            {% with doc_name=doc.user.get_full_name|default:doc.user.username %}
+                            {% with safe_name=doc_name|urlencode %}
+                            {% with avatar_url="https://ui-avatars.com/api/?name="|add:safe_name|add:"&background=b7eaff&color=005a70&size=128" %}
+                            <div class="doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group" onclick="selectDoctor('{{ doc.user.id }}', 'Dr. {{ doc_name|escapejs }}', this)">
+                                <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('{{ avatar_url }}')"></div>
+                                <div class="flex flex-col flex-1">
+                                    <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">Dr. {{ doc_name }}</span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">{{ doc.specialization }}</span>
+                                        <span class="text-xs text-slate-400 font-medium">{{ doc.experience_years }}y EXP</span>
+                                    </div>
+                                </div>
+                                <div class="check-mark opacity-0 scale-50 transition-all duration-300 absolute right-5 text-primary bg-primary/10 rounded-full p-1 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
+                                </div>
                             </div>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endwith %}
+                            {% empty %}
+                            <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">person_off</span>
+                                <p class="text-slate-500 font-medium">No doctors available for this specialty.</p>
+                            </div>
+                            {% endfor %}
                         </div>
+                        
+                        {% if is_paginated %}
+                        <div class="mt-6 flex items-center justify-center gap-2">
+                            {% if doctors_page.has_previous %}
+                                <a href="?specialty={{ current_specialty|urlencode }}&page={{ doctors_page.previous_page_number }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-primary font-bold text-sm transition-all shadow-sm">Previous</a>
+                            {% endif %}
+                            
+                            <span class="px-4 py-2 bg-slate-50 text-slate-500 font-bold text-sm rounded-lg border border-slate-100">
+                                Page {{ doctors_page.number }} of {{ doctors_page.paginator.num_pages }}
+                            </span>
+                            
+                            {% if doctors_page.has_next %}
+                                <a href="?specialty={{ current_specialty|urlencode }}&page={{ doctors_page.next_page_number }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-primary font-bold text-sm transition-all shadow-sm">Next</a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </section>
 
                     <!-- 2. Select Date & Time -->
@@ -463,43 +507,7 @@
                 </div>`;
         }
 
-        // Fetch Doctors on load
-        fetch('/appointments/api/doctors/')
-            .then(res => res.json())
-            .then(doctors => {
-                const container = document.getElementById('doctors-container');
-                container.innerHTML = '';
-
-                if (doctors.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                            <p class="text-slate-500 font-medium">No specialists available currently.</p>
-                        </div>`;
-                    return;
-                }
-
-                doctors.forEach(doc => {
-                    const dummyImg = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.full_name) + '&background=b7eaff&color=005a70&size=128';
-                    const el = document.createElement('div');
-                    el.className = 'doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group';
-                    el.innerHTML = `
-                        <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('${dummyImg}')"></div>
-                        <div class="flex flex-col flex-1">
-                            <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">${doc.full_name}</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.specialization}</span>
-                                <span class="text-xs text-slate-400 font-medium">${doc.experience_years}y EXP</span>
-                            </div>
-                        </div>
-                        <div class="check-mark opacity-0 scale-50 transition-all duration-300 absolute right-5 text-primary bg-primary/10 rounded-full p-1 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
-                        </div>
-                    `;
-                    el.onclick = () => selectDoctor(doc.id, doc.full_name, el);
-                    container.appendChild(el);
-                });
-            });
-
+        // --- DOCTOR SELECTION & AJAX ---
         function selectDoctor(id, name, el) {
             state.doctor = id;
             state.doctorName = name;
