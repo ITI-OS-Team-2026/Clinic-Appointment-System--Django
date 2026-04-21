@@ -6,6 +6,9 @@ from django.contrib import messages
 from django.db import transaction
 from users.models import User, PatientProfile
 
+def landing(request):
+    return render(request, 'landing.html')
+
 def patient_register(request):
     if request.user.is_authenticated:
         return redirect_based_on_role(request)
