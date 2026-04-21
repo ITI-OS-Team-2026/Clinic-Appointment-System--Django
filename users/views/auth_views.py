@@ -180,7 +180,15 @@ def redirect_based_on_role(request):
         return redirect('login')
 
 def logout_view(request):
+    # Clear all messages safely so they don't persist
+    list(messages.get_messages(request))
+    
+    # Logout user
     logout(request)
+    
+    # Flush session
+    request.session.flush()
+    
     return redirect('login')
 
 def forget_password(request):
