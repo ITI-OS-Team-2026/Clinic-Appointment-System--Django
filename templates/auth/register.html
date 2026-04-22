@@ -24,9 +24,9 @@
       class="fixed top-0 w-full z-50 bg-cyan-50/50 dark:bg-slate-950/50 backdrop-blur-xl flex justify-between items-center px-6 py-4 no-line-rule tonal-shift-only flat-no-shadows font-['Manrope'] tracking-tight"
     >
       <div class="flex items-center gap-2">
-        <span
-          class="text-xl font-bold tracking-tighter text-cyan-900 dark:text-cyan-100"
-          >Aura Health Systems</span
+        <a href="/"
+          class="text-xl font-bold tracking-tighter text-cyan-900 dark:text-cyan-100 hover:opacity-90 transition-opacity"
+          >Aura Health Systems</a
         >
       </div>
     </nav>
@@ -144,6 +144,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="full_name"
                     name="first_name"
                     placeholder="e.g. Dr. Jane Doe"
                     type="text"
@@ -157,9 +158,11 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="date_of_birth"
                     name="date_of_birth"
                     type="date"
                     required
+                    max="{{ today }}"
                   />
                 </div>
                 <div>
@@ -169,6 +172,7 @@
                   >
                   <select
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="gender"
                     name="gender"
                     required
                   >
@@ -184,6 +188,7 @@
                   >
                   <select
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="blood_type"
                     name="blood_type"
                     required
                   >
@@ -220,6 +225,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="email"
                     name="email"
                     placeholder="jane@example.com"
                     type="email"
@@ -233,6 +239,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="contact_number"
                     name="contact_number"
                     placeholder="+1 (555) 000-0000"
                     type="tel"
@@ -246,6 +253,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="address"
                     name="address"
                     placeholder="Street Address, City, ZIP Code"
                     type="text"
@@ -274,6 +282,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="username"
                     name="username"
                     placeholder="Choose a unique username"
                     type="text"
@@ -291,12 +300,13 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="password"
                     name="password"
                     placeholder="••••••••"
                     type="password"
                     required
                     minlength="8"
-                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$"
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$"
                     title="Password must be at least 8 characters with uppercase, lowercase, number, and special character"
                   />
                 </div>
@@ -307,6 +317,7 @@
                   >
                   <input
                     class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all"
+                    id="confirm_password"
                     name="confirm_password"
                     placeholder="••••••••"
                     type="password"
@@ -361,5 +372,113 @@
         </div>
       </div>
     </div>
+    <script>
+      const getErrorNode = (el) => {
+        let error = document.getElementById(`${el.id}-error`);
+        if (!error) {
+          error = document.createElement('p');
+          error.id = `${el.id}-error`;
+          error.style.color = 'red';
+          error.style.fontSize = '12px';
+          error.style.marginTop = '4px';
+          el.parentNode.appendChild(error);
+        }
+        return error;
+      };
+
+      const validateField = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return true;
+
+        const value = el.value.trim();
+        const error = getErrorNode(el);
+        let message = '';
+
+        if (id === 'full_name') {
+          if (!value || value.split(/\s+/).filter(Boolean).length < 2) {
+            message = 'Please enter your first and last name';
+          }
+        } else if (id === 'date_of_birth') {
+          if (!value) {
+            message = 'Date of birth cannot be in the future';
+          } else {
+            const selectedDate = new Date(value);
+            selectedDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate > today) {
+              message = 'Date of birth cannot be in the future';
+            }
+          }
+        } else if (id === 'gender') {
+          if (!value) {
+            message = 'Please select a gender';
+          }
+        } else if (id === 'blood_type') {
+          if (!value) {
+            message = 'Please select a blood type';
+          }
+        } else if (id === 'email') {
+          if (!value || !/^\S+@\S+\.\S+$/.test(value)) {
+            message = 'Please enter a valid email address';
+          }
+        } else if (id === 'contact_number') {
+          if (!value || !/^\+?\d+$/.test(value)) {
+            message =
+              'Phone number must contain numbers only, + is only allowed at the start';
+          }
+        } else if (id === 'address') {
+          if (!value) {
+            message = 'Address is required';
+          }
+        } else if (id === 'username') {
+          if (!value || !/^[A-Za-z0-9_]+$/.test(value)) {
+            message = 'Username cannot contain spaces or special characters';
+          }
+        } else if (id === 'password') {
+          if (
+            !value ||
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(
+              value
+            )
+          ) {
+            message =
+              'Password must be at least 8 characters with uppercase, lowercase, number, and special character';
+          }
+        } else if (id === 'confirm_password') {
+          const password = document.getElementById('password');
+          if (!value || !password || value !== password.value) {
+            message = 'Passwords do not match';
+          }
+        }
+
+        error.textContent = message;
+        return !message;
+      };
+
+      const fieldIds = [
+        'full_name',
+        'date_of_birth',
+        'gender',
+        'blood_type',
+        'email',
+        'contact_number',
+        'address',
+        'username',
+        'password',
+        'confirm_password',
+      ];
+
+      fieldIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener('blur', () => validateField(id));
+        el.addEventListener('input', () => {
+          const error = document.getElementById(`${id}-error`);
+          if (error) error.textContent = '';
+        });
+      });
+    </script>
   </body>
 </html>

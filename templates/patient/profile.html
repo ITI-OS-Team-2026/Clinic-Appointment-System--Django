@@ -126,6 +126,15 @@
                 <!-- Edit Mode Section -->
                 <form id="edit-section" method="POST" class="hidden space-y-10">
                     {% csrf_token %}
+                    {% if messages %}
+                    {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                        <p class="text-sm text-red-700 font-bold">{{ message }}</p>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                         <div class="space-y-3">
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">First Name</label>
@@ -170,7 +179,6 @@
                                 <select name="gender" class="w-full bg-slate-50 border-none rounded-3xl py-4 pl-12 pr-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-secondary/10 transition-all placeholder:text-slate-300">
                                     <option value="Male" {% if profile.gender == "Male" %}selected{% endif %}>Male</option>
                                     <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
-                                    <option value="Other" {% if profile.gender == "Other" %}selected{% endif %}>Other</option>
                                 </select>
                             </div>
                         </div>
@@ -224,4 +232,7 @@
         document.getElementById('mode-title').innerText = 'Personal Information';
     }
 </script>
+{% if edit_mode %}
+<script>toggleEditMode();</script>
+{% endif %}
 {% endblock %}

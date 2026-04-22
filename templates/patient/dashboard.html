@@ -1,210 +1,695 @@
 {% extends 'patient/base_patient.html' %}
+
+{% block extra_head %}
+<style>
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::marker { display: none; }
+
+    details[open] .filter-chevron { transform: rotate(180deg); }
+    .filter-chevron { transition: transform 0.2s ease; }
+</style>
+{% endblock %}
+
 {% block content %}
-<nav class="bg-white shadow border-b py-4">
-    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
-            <h1 class="font-heading font-bold text-xl">Clinic</h1>
-        </div>
 
-        <div class="flex items-center gap-4">
-            <span>{{ profile.user.first_name }} {{ profile.user.last_name }}</span>
-            <a href="/users/logout/" class="text-sm text-red-500 font-medium">Logout</a>
-        </div>
+<div class="flex flex-wrap justify-between items-start gap-4 mb-8">
+    <div>
+        <h2 class="text-3xl font-headline font-extrabold text-slate-900 tracking-tight">My Dashboard</h2>
+        <p class="text-slate-400 text-sm mt-1 font-medium">
+            Welcome back, {{ profile.user.first_name|default:request.user.username }} 👋
+        </p>
     </div>
-</nav>
+    <a href="/appointments/patient/book/"
+       class="inline-flex items-center gap-2 bg-primary hover:bg-cyan-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 whitespace-nowrap">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Book Appointment
+    </a>
+</div>
 
-<main class="max-w-7xl mx-auto px-4 py-8">
 
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-heading font-bold">Dashboard</h2>
-        <a href="/appointments/patient/book/"
-            class="bg-primary hover:bg-cyan-700 text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">add</span>
-            Book Appointment
-        </a>
-    </div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
 
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
-        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-            <p class="text-sm text-gray-500 mb-1">Total</p>
-            <p class="text-3xl font-heading font-bold">{{ total }}</p>
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-slate-500 text-[18px]">calendar_month</span>
+            </span>
         </div>
-        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-            <p class="text-sm text-gray-500 mb-1">Upcoming</p>
-            <!-- might need to fix later if 0 -->
-            <p class="text-3xl font-heading font-bold text-primary">{{ upcoming|length }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-            <p class="text-sm text-gray-500 mb-1">Completed</p>
-            <p class="text-3xl font-heading font-bold text-green-600">{{ completed_count }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-            <p class="text-sm text-gray-500 mb-1">Cancelled</p>
-            <p class="text-3xl font-heading font-bold text-red-500">{{ cancelled_count }}</p>
-        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total</p>
+        <p class="text-3xl font-headline font-extrabold text-slate-900">{{ total }}</p>
     </div>
 
-    <div class="mb-10">
-        <h3 class="text-xl font-heading font-bold mb-4">Upcoming Appointments</h3>
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-[18px]">event_upcoming</span>
+            </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Upcoming</p>
+        <p class="text-3xl font-headline font-extrabold text-primary">{{ upcoming_count }}</p>
+    </div>
 
-        {% if upcoming %}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
+            </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Completed</p>
+        <p class="text-3xl font-headline font-extrabold text-emerald-600">{{ completed_count }}</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 bg-rose-50 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-rose-500 text-[18px]">cancel</span>
+            </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cancelled</p>
+        <p class="text-3xl font-headline font-extrabold text-rose-500">{{ cancelled_count }}</p>
+    </div>
+
+</div>
+
+
+<section class="mb-12">
+
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-headline font-bold text-slate-900 flex items-center gap-3">
+            Upcoming Appointments
+            <span class="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full tabular-nums">
+                {{ upcoming.paginator.count }}
+            </span>
+        </h3>
+    </div>
+
+    <details class="bg-white border border-slate-200 rounded-2xl mb-4 shadow-sm"
+             {% if upcoming_filters.doctor or upcoming_filters.status or upcoming_filters.date_from or upcoming_filters.date_to %}open{% endif %}>
+
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer focus:outline-none select-none rounded-2xl hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-2 font-bold text-sm text-slate-600">
+                <span class="material-symbols-outlined text-[20px] text-primary">filter_list</span>
+                Filter Appointments
+                {% if upcoming_filters.doctor or upcoming_filters.status or upcoming_filters.date_from or upcoming_filters.date_to %}
+                <span class="bg-primary text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>
+                {% endif %}
+            </div>
+            <span class="material-symbols-outlined text-slate-400 filter-chevron">expand_more</span>
+        </summary>
+
+        <div class="px-5 pb-5 border-t border-slate-100">
+            <form method="GET" action="">
+                {% for key, value in past_all_params.items %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endfor %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Doctor</label>
+                        <select name="upcoming_doctor"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">All Doctors</option>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.user.id }}"
+                                    {% if upcoming_filters.doctor == doctor.user.id|stringformat:"i" %}selected{% endif %}>
+                                Dr. {{ doctor.user.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Status</label>
+                        <select name="upcoming_status"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">All Statuses</option>
+                            <option value="REQUESTED"  {% if upcoming_filters.status == 'REQUESTED'  %}selected{% endif %}>Requested</option>
+                            <option value="CONFIRMED"  {% if upcoming_filters.status == 'CONFIRMED'  %}selected{% endif %}>Confirmed</option>
+                            <option value="CHECKED_IN" {% if upcoming_filters.status == 'CHECKED_IN' %}selected{% endif %}>Checked In</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">From Date</label>
+                        <input type="date" name="upcoming_date_from" value="{{ upcoming_filters.date_from }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">To Date</label>
+                        <input type="date" name="upcoming_date_to" value="{{ upcoming_filters.date_to }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                    </div>
+
+                </div>
+
+                <div class="flex items-center gap-3 mt-4">
+                    <button type="submit"
+                            class="bg-primary hover:bg-cyan-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-primary/20 hover:scale-105 active:scale-95">
+                        Apply Filters
+                    </button>
+                    <a href="?{{ past_all_qs }}"
+                       class="text-sm font-bold text-slate-400 hover:text-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors">
+                        Clear All
+                    </a>
+                </div>
+            </form>
+        </div>
+    </details>
+
+    {% if upcoming_filters.doctor or upcoming_filters.status or upcoming_filters.date_from or upcoming_filters.date_to %}
+    <div class="flex flex-wrap gap-2 mb-4">
+
+        {% if upcoming_filters.doctor %}
+        <button type="button" onclick="removeFilter('upcoming_doctor')"
+                class="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">person</span>
+            {{ upcoming_filters.doctor_name }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if upcoming_filters.status %}
+        <button type="button" onclick="removeFilter('upcoming_status')"
+                class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">flag</span>
+            {{ upcoming_filters.status_label }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if upcoming_filters.date_from %}
+        <button type="button" onclick="removeFilter('upcoming_date_from')"
+                class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-violet-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+            From: {{ upcoming_filters.date_from }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if upcoming_filters.date_to %}
+        <button type="button" onclick="removeFilter('upcoming_date_to')"
+                class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-violet-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">event</span>
+            To: {{ upcoming_filters.date_to }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+    {% if upcoming.object_list %}
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left min-w-[600px]">
+                <thead class="bg-slate-50 border-b border-slate-200">
                     <tr>
-                        <th class="p-4 text-sm text-gray-500 font-medium">Date & Time</th>
-                        <th class="p-4 text-sm text-gray-500 font-medium">Doctor</th>
-                        <th class="p-4 text-sm text-gray-500 font-medium">Status</th>
-                        <th class="p-4 text-sm text-gray-500 font-medium text-right">Actions</th>
+                        <th class="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date & Time</th>
+                        <th class="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Doctor</th>
+                        <th class="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                        <th class="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
-                    {% for appt in upcoming %}
-                    <tr>
-                        <td class="p-4">
-                            <div class="font-medium">{{ appt.appointment_date }}</div>
-                            <div class="text-sm text-gray-500">{{ appt.start_time }}</div>
+                <tbody class="divide-y divide-slate-100">
+                    {% for appt in upcoming.object_list %}
+                    <tr class="hover:bg-slate-50/60 transition-colors">
+
+                        <td class="px-5 py-4">
+                            <div class="font-bold text-slate-900 text-sm">{{ appt.appointment_date }}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">{{ appt.start_time|time:"g:i A" }}</div>
                         </td>
-                        <td class="p-4">
-                            <div class="font-medium">Dr. {{ appt.doctor.get_full_name }}</div>
-                            <!-- show specialty here later? -->
+
+                        <td class="px-5 py-4">
+                            <div class="font-bold text-slate-900 text-sm">Dr. {{ appt.doctor.get_full_name }}</div>
                         </td>
-                        <td class="p-4">
-                            <span
-                                class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{{appt.status}}</span>
+
+                        <td class="px-5 py-4">
+                            <span class="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full
+                                {% if appt.status == 'REQUESTED'  %}bg-amber-50   text-amber-700
+                                {% elif appt.status == 'CONFIRMED'  %}bg-emerald-50 text-emerald-700
+                                {% elif appt.status == 'CHECKED_IN' %}bg-blue-50    text-blue-700
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
                         </td>
-                        <td class="p-4 text-right whitespace-nowrap">
+
+                        <td class="px-5 py-4 text-right whitespace-nowrap">
                             {% if appt.status == 'REQUESTED' or appt.status == 'CONFIRMED' %}
-                            <button onclick="openRescheduleModal('{{ appt.id }}', '{{ appt.doctor.id }}')"
-                                class="text-xs text-primary hover:text-cyan-700 font-medium py-1 px-3 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors inline-block mr-2">
+                            <button type="button"
+                                    onclick="openRescheduleModal('{{ appt.id }}', '{{ appt.doctor.id }}')"
+                                    class="text-xs text-primary hover:text-cyan-700 font-bold py-1.5 px-3 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors inline-block mr-2">
                                 Reschedule
                             </button>
                             <form method="POST" action="{% url 'cancel-appointment' appt.id %}" class="inline-block">
                                 {% csrf_token %}
                                 <button type="submit"
-                                    class="text-xs text-rose-500 hover:text-rose-700 font-medium py-1 px-3 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
+                                        class="text-xs text-rose-500 hover:text-rose-700 font-bold py-1.5 px-3 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
                                     Cancel
                                 </button>
                             </form>
+                            {% else %}
+                            <span class="text-xs text-slate-300 font-medium italic">No actions available</span>
                             {% endif %}
                         </td>
+
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <div class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
-            <p class="text-gray-500 mb-3">No upcoming appointments.</p>
-        </div>
-        {% endif %}
-
     </div>
 
-    <div>
-        <h3 class="text-xl font-heading font-bold mb-4">Past Appointments</h3>
+    {% if upcoming.has_other_pages %}
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
+        <p class="text-xs text-slate-400 font-medium order-2 sm:order-1">
+            Showing <span class="font-bold text-slate-600">{{ upcoming.start_index }}–{{ upcoming.end_index }}</span>
+            of <span class="font-bold text-slate-600">{{ upcoming.paginator.count }}</span> appointments
+        </p>
+        <nav class="flex items-center gap-1 order-1 sm:order-2" aria-label="Upcoming appointments pagination">
 
-        {% if past %}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {% for appt in past %}
-            <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm opacity-80 hover:opacity-100 flex flex-col">
-                <div class="flex justify-between mb-2">
-                    <div class="font-medium">{{ appt.appointment_date }}</div>
-                    <div class="text-xs font-semibold px-2 py-1 rounded-full 
-                                {% if appt.status == 'COMPLETED' %}bg-green-100 text-green-800
-                                {% elif appt.status == 'CANCELLED' %}bg-red-100 text-red-800
-                                {% else %}bg-gray-100 text-gray-800{% endif %}">
-                        {{ appt.status }}
-                    </div>
-                </div>
-                <div class="text-sm text-gray-500 mb-4">{{ appt.start_time }} • Dr. {{ appt.doctor.get_full_name }}</div>
-                
-                {% if appt.status == 'COMPLETED' %}
-                <div class="border-t border-gray-100 pt-3 mt-auto">
-                    <a href="{% url 'patient_consultation_summary' appt.id %}" class="w-full text-center py-2 bg-slate-50 hover:bg-primary hover:text-white text-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1">
-                        View Summary
+            {% if upcoming.has_previous %}
+            <a href="?upcoming_page={{ upcoming.previous_page_number }}{% if upcoming_pagination_qs %}&{{ upcoming_pagination_qs }}{% endif %}"
+               class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+               aria-label="Previous page">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </a>
+            {% else %}
+            <span class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed" aria-disabled="true">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </span>
+            {% endif %}
+
+            <div class="hidden sm:flex items-center gap-1">
+                {% for p in upcoming_page_range %}
+                    {% if not p %}
+                    <span class="w-9 h-9 flex items-center justify-center text-slate-400 text-sm select-none">…</span>
+                    {% elif p == upcoming.number %}
+                    <span class="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white text-sm font-bold shadow-sm shadow-primary/30"
+                          aria-current="page">{{ p }}</span>
+                    {% else %}
+                    <a href="?upcoming_page={{ p }}{% if upcoming_pagination_qs %}&{{ upcoming_pagination_qs }}{% endif %}"
+                       class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-primary text-sm font-medium transition-colors">
+                        {{ p }}
                     </a>
-                </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <span class="sm:hidden text-xs font-bold text-slate-500 px-3 py-2 bg-slate-100 rounded-xl">
+                {{ upcoming.number }} / {{ upcoming.paginator.num_pages }}
+            </span>
+
+            {% if upcoming.has_next %}
+            <a href="?upcoming_page={{ upcoming.next_page_number }}{% if upcoming_pagination_qs %}&{{ upcoming_pagination_qs }}{% endif %}"
+               class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+               aria-label="Next page">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </a>
+            {% else %}
+            <span class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed" aria-disabled="true">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </span>
+            {% endif %}
+
+        </nav>
+    </div>
+    {% else %}
+    <p class="text-xs text-slate-400 font-medium mt-3 px-1">
+        Showing all <span class="font-bold text-slate-600">{{ upcoming.paginator.count }}</span>
+        appointment{% if upcoming.paginator.count != 1 %}s{% endif %}
+    </p>
+    {% endif %}
+
+    {% elif upcoming_filters.doctor or upcoming_filters.status or upcoming_filters.date_from or upcoming_filters.date_to %}
+    <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-slate-400 text-[28px]">search_off</span>
+        </div>
+        <p class="font-bold text-slate-800 mb-1">No appointments match your filters</p>
+        <p class="text-sm text-slate-400 mb-5">Try adjusting or clearing your current filters to see more results.</p>
+        <a href="?{{ past_all_qs }}"
+           class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-5 py-2.5 rounded-xl transition-colors">
+            <span class="material-symbols-outlined text-[16px]">filter_list_off</span>
+            Clear Filters
+        </a>
+    </div>
+
+    {% else %}
+    <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-primary text-[28px]">event_available</span>
+        </div>
+        <p class="font-bold text-slate-800 mb-1">No upcoming appointments</p>
+        <p class="text-sm text-slate-400 mb-5">Ready to see a doctor? Book your next appointment now and we'll take care of the rest.</p>
+        <a href="/appointments/patient/book/"
+           class="inline-flex items-center gap-2 text-sm font-bold text-white bg-primary hover:bg-cyan-700 px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-primary/20 hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+            Book Appointment
+        </a>
+    </div>
+    {% endif %}
+
+</section>
+
+
+<section>
+
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-headline font-bold text-slate-900 flex items-center gap-3">
+            Past Appointments
+            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full tabular-nums">
+                {{ past.paginator.count }}
+            </span>
+        </h3>
+    </div>
+
+    <details class="bg-white border border-slate-200 rounded-2xl mb-4 shadow-sm"
+             {% if past_filters.doctor or past_filters.status or past_filters.date_from or past_filters.date_to %}open{% endif %}>
+
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer focus:outline-none select-none rounded-2xl hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-2 font-bold text-sm text-slate-600">
+                <span class="material-symbols-outlined text-[20px] text-primary">filter_list</span>
+                Filter Appointments
+                {% if past_filters.doctor or past_filters.status or past_filters.date_from or past_filters.date_to %}
+                <span class="bg-primary text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>
                 {% endif %}
             </div>
-            {% endfor %}
+            <span class="material-symbols-outlined text-slate-400 filter-chevron">expand_more</span>
+        </summary>
+
+        <div class="px-5 pb-5 border-t border-slate-100">
+            <form method="GET" action="">
+                {% for key, value in upcoming_all_params.items %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endfor %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Doctor</label>
+                        <select name="past_doctor"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">All Doctors</option>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.user.id }}"
+                                    {% if past_filters.doctor == doctor.user.id|stringformat:"i" %}selected{% endif %}>
+                                Dr. {{ doctor.user.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Status</label>
+                        <select name="past_status"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">All Statuses</option>
+                            <option value="COMPLETED" {% if past_filters.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                            <option value="CANCELLED" {% if past_filters.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                            <option value="NO_SHOW"   {% if past_filters.status == 'NO_SHOW'   %}selected{% endif %}>No Show</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">From Date</label>
+                        <input type="date" name="past_date_from" value="{{ past_filters.date_from }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">To Date</label>
+                        <input type="date" name="past_date_to" value="{{ past_filters.date_to }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                    </div>
+
+                </div>
+
+                <div class="flex items-center gap-3 mt-4">
+                    <button type="submit"
+                            class="bg-primary hover:bg-cyan-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-primary/20 hover:scale-105 active:scale-95">
+                        Apply Filters
+                    </button>
+                    <a href="?{{ upcoming_all_qs }}"
+                       class="text-sm font-bold text-slate-400 hover:text-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors">
+                        Clear All
+                    </a>
+                </div>
+            </form>
         </div>
-        {% else %}
-        <p class="text-gray-500">No past appointments.</p>
+    </details>
+
+    {% if past_filters.doctor or past_filters.status or past_filters.date_from or past_filters.date_to %}
+    <div class="flex flex-wrap gap-2 mb-4">
+
+        {% if past_filters.doctor %}
+        <button type="button" onclick="removeFilter('past_doctor')"
+                class="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">person</span>
+            {{ past_filters.doctor_name }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if past_filters.status %}
+        <button type="button" onclick="removeFilter('past_status')"
+                class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">flag</span>
+            {{ past_filters.status_label }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if past_filters.date_from %}
+        <button type="button" onclick="removeFilter('past_date_from')"
+                class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-violet-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+            From: {{ past_filters.date_from }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+        {% endif %}
+
+        {% if past_filters.date_to %}
+        <button type="button" onclick="removeFilter('past_date_to')"
+                class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-violet-100 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">event</span>
+            To: {{ past_filters.date_to }}
+            <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
         {% endif %}
 
     </div>
-</main>
+    {% endif %}
 
-<!-- Reschedule Modal -->
+    {% if past.object_list %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for appt in past.object_list %}
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div class="flex justify-between items-start mb-3">
+                <div class="min-w-0 flex-1">
+                    <div class="font-bold text-slate-900 text-sm">{{ appt.appointment_date }}</div>
+                    <div class="text-xs text-slate-400 mt-0.5 truncate">
+                        {{ appt.start_time|time:"g:i A" }} &bull; Dr. {{ appt.doctor.get_full_name }}
+                    </div>
+                </div>
+                <span class="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full ml-3 shrink-0
+                            {% if appt.status == 'COMPLETED' %}bg-emerald-50 text-emerald-700
+                            {% elif appt.status == 'CANCELLED' %}bg-rose-50 text-rose-700
+                            {% elif appt.status == 'NO_SHOW' %}bg-amber-50 text-amber-700
+                            {% else %}bg-slate-100 text-slate-600{% endif %}">
+                    {{ appt.get_status_display }}
+                </span>
+            </div>
+
+            {% if appt.status == 'COMPLETED' %}
+            <div class="mt-auto pt-3 border-t border-slate-100">
+                <a href="{% url 'patient_consultation_summary' appt.id %}"
+                   class="w-full text-center py-2 bg-slate-50 hover:bg-primary hover:text-white text-primary text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">description</span>
+                    View Summary
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if past.has_other_pages %}
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 px-1">
+        <p class="text-xs text-slate-400 font-medium order-2 sm:order-1">
+            Showing <span class="font-bold text-slate-600">{{ past.start_index }}–{{ past.end_index }}</span>
+            of <span class="font-bold text-slate-600">{{ past.paginator.count }}</span> appointments
+        </p>
+        <nav class="flex items-center gap-1 order-1 sm:order-2" aria-label="Past appointments pagination">
+
+            {% if past.has_previous %}
+            <a href="?past_page={{ past.previous_page_number }}{% if past_pagination_qs %}&{{ past_pagination_qs }}{% endif %}"
+               class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+               aria-label="Previous page">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </a>
+            {% else %}
+            <span class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed" aria-disabled="true">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </span>
+            {% endif %}
+
+            <div class="hidden sm:flex items-center gap-1">
+                {% for p in past_page_range %}
+                    {% if not p %}
+                    <span class="w-9 h-9 flex items-center justify-center text-slate-400 text-sm select-none">…</span>
+                    {% elif p == past.number %}
+                    <span class="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white text-sm font-bold shadow-sm shadow-primary/30"
+                          aria-current="page">{{ p }}</span>
+                    {% else %}
+                    <a href="?past_page={{ p }}{% if past_pagination_qs %}&{{ past_pagination_qs }}{% endif %}"
+                       class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-primary text-sm font-medium transition-colors">
+                        {{ p }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <span class="sm:hidden text-xs font-bold text-slate-500 px-3 py-2 bg-slate-100 rounded-xl">
+                {{ past.number }} / {{ past.paginator.num_pages }}
+            </span>
+
+            {% if past.has_next %}
+            <a href="?past_page={{ past.next_page_number }}{% if past_pagination_qs %}&{{ past_pagination_qs }}{% endif %}"
+               class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+               aria-label="Next page">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </a>
+            {% else %}
+            <span class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed" aria-disabled="true">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </span>
+            {% endif %}
+
+        </nav>
+    </div>
+    {% else %}
+    <p class="text-xs text-slate-400 font-medium mt-4 px-1">
+        Showing all <span class="font-bold text-slate-600">{{ past.paginator.count }}</span>
+        appointment{% if past.paginator.count != 1 %}s{% endif %}
+    </p>
+    {% endif %}
+
+    {% elif past_filters.doctor or past_filters.status or past_filters.date_from or past_filters.date_to %}
+    <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-slate-400 text-[28px]">search_off</span>
+        </div>
+        <p class="font-bold text-slate-800 mb-1">No appointments match your filters</p>
+        <p class="text-sm text-slate-400 mb-5">Try adjusting or clearing your current filters.</p>
+        <a href="?{{ upcoming_all_qs }}"
+           class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-5 py-2.5 rounded-xl transition-colors">
+            <span class="material-symbols-outlined text-[16px]">filter_list_off</span>
+            Clear Filters
+        </a>
+    </div>
+
+    {% else %}
+    <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-slate-400 text-[28px]">history</span>
+        </div>
+        <p class="font-bold text-slate-800 mb-1">No past appointments yet</p>
+        <p class="text-sm text-slate-400">Your completed, cancelled, and no-show appointments will appear here.</p>
+    </div>
+    {% endif %}
+
+</section>
+
+
 <div id="reschedule-modal"
-    class="fixed inset-0 z-[100] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
+     class="fixed inset-0 z-[100] hidden overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRescheduleModal()"></div>
-    <div
-        class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+    <div class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <form id="reschedule-form" method="POST" action="">
             {% csrf_token %}
             <input type="hidden" name="new_start_time" id="reschedule-new-start">
 
             <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
-                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule
-                        Appointment</h2>
+                    <h2 class="text-xl font-headline font-extrabold text-slate-900 tracking-tight">Reschedule Appointment</h2>
                 </div>
                 <button type="button" onclick="closeRescheduleModal()"
-                    class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
+                        class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 transition-colors">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
+
             <div class="p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
-                            Dates</label>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Dates</label>
                         <select id="reschedule-date-select" name="new_date" onchange="renderModalSlots()"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
                             <option value="">Loading dates...</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available
-                            Slots</label>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Available Slots</label>
                         <div id="reschedule-slots-container"
-                            class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                            <div
-                                class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                             class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="mt-8">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for
-                        Rescheduling</label>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">Reason for Rescheduling</label>
                     <textarea name="reason" id="reschedule-reason" rows="2"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                              class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
                 </div>
             </div>
+
             <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button type="button" onclick="closeRescheduleModal()"
-                    class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                        class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">
+                    Cancel
+                </button>
                 <button id="reschedule-confirm-btn" type="submit" disabled
-                    class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">Confirm
-                    Reschedule</button>
+                        class="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
+                    Confirm Reschedule
+                </button>
             </div>
         </form>
     </div>
 </div>
 
+
+{% endblock %}
+
+
+{% block extra_js %}
 <script>
+    function removeFilter(paramName) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(paramName);
+        if (paramName.startsWith('upcoming_')) {
+            url.searchParams.delete('upcoming_page');
+        } else if (paramName.startsWith('past_')) {
+            url.searchParams.delete('past_page');
+        }
+        window.location.href = url.toString();
+    }
+
     let rescheduleSlots = [];
 
     function openRescheduleModal(apptId, doctorId) {
         document.getElementById('reschedule-modal').classList.remove('hidden');
         document.getElementById('reschedule-form').action = `/appointments/patient/${apptId}/reschedule/`;
         document.getElementById('reschedule-date-select').innerHTML = '<option value="">Loading dates...</option>';
-        document.getElementById('reschedule-slots-container').innerHTML = '<div class="col-span-full py-8 text-center text-slate-400 font-bold"><span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
+        document.getElementById('reschedule-slots-container').innerHTML =
+            '<div class="col-span-full py-8 text-center text-slate-400 font-bold">' +
+            '<span class="material-symbols-outlined animate-spin text-primary">sync</span></div>';
         document.getElementById('reschedule-confirm-btn').disabled = true;
 
         fetch(`/api/doctors/${doctorId}/slots/`)
@@ -217,7 +702,9 @@
                 dates.forEach(d => {
                     const opt = document.createElement('option');
                     opt.value = d;
-                    opt.innerText = new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    opt.innerText = new Date(d).toLocaleDateString(undefined, {
+                        weekday: 'short', month: 'short', day: 'numeric'
+                    });
                     ds.appendChild(opt);
                 });
                 renderModalSlots();
@@ -234,23 +721,28 @@
         container.innerHTML = '';
 
         if (!date) {
-            container.innerHTML = '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
+            container.innerHTML =
+                '<div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">' +
+                '<p class="text-[10px] text-slate-400 font-bold uppercase">Select a date first</p></div>';
             return;
         }
 
         const filtered = rescheduleSlots.filter(s => s.date === date);
         if (filtered.length === 0) {
-            container.innerHTML = '<div class="col-span-full py-8 text-center"><p class="text-xs text-slate-400">No slots available for this date</p></div>';
+            container.innerHTML =
+                '<div class="col-span-full py-8 text-center">' +
+                '<p class="text-xs text-slate-400">No slots available for this date</p></div>';
             return;
         }
 
         filtered.forEach(slot => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = "py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all";
+            btn.className = 'py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold hover:border-primary hover:text-primary transition-all';
             btn.innerText = slot.start_time.substring(0, 5);
             btn.onclick = () => {
-                document.querySelectorAll('#reschedule-slots-container button').forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
+                document.querySelectorAll('#reschedule-slots-container button')
+                    .forEach(b => b.classList.remove('bg-primary', 'text-white', 'border-primary'));
                 btn.classList.add('bg-primary', 'text-white', 'border-primary');
                 document.getElementById('reschedule-new-start').value = slot.start_time;
                 document.getElementById('reschedule-confirm-btn').disabled = false;

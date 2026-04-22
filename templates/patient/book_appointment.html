@@ -139,18 +139,18 @@
                     <div>
                         <h1 class="text-2xl font-headline font-extrabold text-slate-900 tracking-tight">Book Appointment
                         </h1>
-                        <p class="text-xs font-semibold text-primary uppercase tracking-wider">Aura Health Systems</p>
+                        <a href="/" class="text-xs font-semibold text-primary uppercase tracking-wider hover:opacity-70 transition-opacity">Aura Health Systems</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 sm:gap-6">
-                    <div class="flex items-center gap-3 bg-slate-50 py-2 px-4 rounded-full border border-slate-100">
+                    <a href="/users/patient/profile/" class="flex items-center gap-3 bg-slate-50 py-2 px-4 rounded-full border border-slate-100 hover:opacity-80 transition-opacity cursor-pointer">
                         <div
                             class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
                             {{ request.user.username|make_list|first|upper }}
                         </div>
                         <span class="text-sm font-semibold text-slate-700 hidden sm:block">
                             {{request.user.username}}</span>
-                    </div>
+                    </a>
                     <a href="/users/logout/"
                         class="text-sm font-bold text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 px-3 py-2 rounded-lg">Logout</a>
                 </div>
@@ -165,20 +165,64 @@
 
                     <!-- 1. Select Doctor -->
                     <section>
-                        <div class="flex items-center gap-4 mb-6">
-                            <div
-                                class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">
-                                1</div>
-                            <h2 class="text-2xl font-headline font-bold text-slate-900">Choose Your Specialist</h2>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">1</div>
+                                <h2 class="text-2xl font-headline font-bold text-slate-900">Choose Your Specialist</h2>
+                            </div>
+                            <form method="GET" class="flex gap-3 items-center">
+                                <select name="specialty" class="bg-white border-slate-200 rounded-xl py-2 pl-4 pr-10 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm cursor-pointer" onchange="this.form.submit()">
+                                    <option value="">All Specialties</option>
+                                    {% for spec in specialties %}
+                                    <option value="{{ spec }}" {% if spec == current_specialty %}selected{% endif %}>{{ spec }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
                         </div>
                         <div id="doctors-container" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div
-                                class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                                <span
-                                    class="material-symbols-outlined text-4xl text-slate-300 animate-spin mb-2">refresh</span>
-                                <p class="text-slate-500 font-medium">Loading elite specialists...</p>
+                            {% for doc in doctors_page %}
+                            {% with doc_name=doc.user.get_full_name|default:doc.user.username %}
+                            {% with safe_name=doc_name|urlencode %}
+                            {% with avatar_url="https://ui-avatars.com/api/?name="|add:safe_name|add:"&background=b7eaff&color=005a70&size=128" %}
+                            <div class="doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group" onclick="selectDoctor('{{ doc.user.id }}', 'Dr. {{ doc_name|escapejs }}', this)">
+                                <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('{{ avatar_url }}')"></div>
+                                <div class="flex flex-col flex-1">
+                                    <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">Dr. {{ doc_name }}</span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">{{ doc.specialization }}</span>
+                                        <span class="text-xs text-slate-400 font-medium">{{ doc.experience_years }}y EXP</span>
+                                    </div>
+                                </div>
+                                <div class="check-mark opacity-0 scale-50 transition-all duration-300 absolute right-5 text-primary bg-primary/10 rounded-full p-1 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
+                                </div>
                             </div>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endwith %}
+                            {% empty %}
+                            <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">person_off</span>
+                                <p class="text-slate-500 font-medium">No doctors available for this specialty.</p>
+                            </div>
+                            {% endfor %}
                         </div>
+                        
+                        {% if is_paginated %}
+                        <div class="mt-6 flex items-center justify-center gap-2">
+                            {% if doctors_page.has_previous %}
+                                <a href="?specialty={{ current_specialty|urlencode }}&page={{ doctors_page.previous_page_number }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-primary font-bold text-sm transition-all shadow-sm">Previous</a>
+                            {% endif %}
+                            
+                            <span class="px-4 py-2 bg-slate-50 text-slate-500 font-bold text-sm rounded-lg border border-slate-100">
+                                Page {{ doctors_page.number }} of {{ doctors_page.paginator.num_pages }}
+                            </span>
+                            
+                            {% if doctors_page.has_next %}
+                                <a href="?specialty={{ current_specialty|urlencode }}&page={{ doctors_page.next_page_number }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-primary font-bold text-sm transition-all shadow-sm">Next</a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </section>
 
                     <!-- 2. Select Date & Time -->
@@ -189,6 +233,10 @@
                                 class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary/30 font-headline text-lg">
                                 2</div>
                             <h2 class="text-2xl font-headline font-bold text-slate-900">Select Date & Time</h2>
+                        </div>
+
+                        <div id="booking-error"
+                            class="hidden mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                         </div>
 
                         <div class="bg-white rounded-[2rem] p-6 md:p-10 shadow-sm border border-slate-200">
@@ -339,6 +387,8 @@
             doctorName: null,
             date: null,
             startTime: null,
+            bookingToken: null,
+            slotId: null,
             availableSlots: [],
             calendarDate: new Date()
         };
@@ -362,9 +412,23 @@
         // Show Toast
         function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            document.getElementById('toast-icon').innerText = isError ? 'error' : 'check_circle';
-            document.getElementById('toast-icon').className = `material-symbols-outlined ${isError ? 'text-rose-400' : 'text-secondary'}`;
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMessage.innerText = msg;
+            toastIcon.innerText = isError ? 'error' : 'check_circle';
+
+            if (isError) {
+                toast.classList.remove('bg-slate-900', 'text-white');
+                toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                toastIcon.className = 'material-symbols-outlined text-red-500';
+                toastMessage.className = 'font-bold text-sm text-red-700';
+            } else {
+                toast.classList.remove('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                toast.classList.add('bg-slate-900', 'text-white');
+                toastIcon.className = 'material-symbols-outlined text-secondary';
+                toastMessage.className = 'font-medium text-sm text-white';
+            }
 
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
@@ -372,49 +436,87 @@
             }, 4000);
         }
 
-        // Fetch Doctors on load
-        fetch('/appointments/api/doctors/')
-            .then(res => res.json())
-            .then(doctors => {
-                const container = document.getElementById('doctors-container');
-                container.innerHTML = '';
+        function showBookingError(message) {
+            const bookingError = document.getElementById('booking-error');
+            bookingError.innerText = message;
+            bookingError.classList.remove('hidden');
+        }
 
-                if (doctors.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-2 p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                            <p class="text-slate-500 font-medium">No specialists available currently.</p>
-                        </div>`;
-                    return;
-                }
+        function clearBookingError() {
+            const bookingError = document.getElementById('booking-error');
+            bookingError.innerText = '';
+            bookingError.classList.add('hidden');
+        }
 
-                doctors.forEach(doc => {
-                    const dummyImg = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.full_name) + '&background=b7eaff&color=005a70&size=128';
-                    const el = document.createElement('div');
-                    el.className = 'doctor-card bg-white p-5 rounded-[1.5rem] cursor-pointer flex items-center gap-4 relative overflow-hidden group';
-                    el.innerHTML = `
-                        <div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 border border-slate-100 shadow-sm" style="background-image: url('${dummyImg}')"></div>
-                        <div class="flex flex-col flex-1">
-                            <span class="text-slate-900 font-headline font-extrabold text-lg group-hover:text-primary transition-colors">${doc.full_name}</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">${doc.specialization}</span>
-                                <span class="text-xs text-slate-400 font-medium">${doc.experience_years}y EXP</span>
-                            </div>
-                        </div>
-                        <div class="check-mark opacity-0 scale-50 transition-all duration-300 absolute right-5 text-primary bg-primary/10 rounded-full p-1 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">done</span>
-                        </div>
-                    `;
-                    el.onclick = () => selectDoctor(doc.id, doc.full_name, el);
-                    container.appendChild(el);
+        // --- CALENDAR INTEGRITY WATCHER ---
+        const calendarObserver = new MutationObserver(() => {
+            // 1. Immediately disconnect
+            calendarObserver.disconnect();
+
+            // 2. Reset state
+            state.date = null;
+            state.startTime = null;
+            state.slotId = null;
+            state.bookingToken = null;
+
+            // 3. Directly set time-slots innerHTML to placeholder
+            document.getElementById('time-slots').innerHTML = `
+                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span class="material-symbols-outlined mb-2 opacity-50">calendar_month</span>
+                    <p class="text-sm italic">Select a highlighted date.</p>
+                </div>`;
+
+            // 4. Force disable the confirm button directly
+            const btnConfirm = document.getElementById('btn-confirm');
+            const btnBg = document.getElementById('btn-bg');
+            const btnText = document.getElementById('btn-text');
+            btnConfirm.disabled = true;
+            btnConfirm.onclick = null;
+            btnConfirm.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+            btnConfirm.classList.remove('text-white', 'shadow-lg', 'shadow-primary/30', 'hover:-translate-y-1');
+            btnBg.classList.remove('opacity-100');
+            btnBg.classList.add('opacity-0');
+            btnText.innerHTML = 'Confirm Booking <span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>';
+
+            // 5. Update summary display
+            document.getElementById('summary-datetime').innerText = 'Waiting for selection';
+            document.getElementById('summary-datetime').className = 'text-sm font-medium text-slate-400 italic';
+
+            // 6. Re-render calendar to replace stale elements/handlers
+            renderCalendar();
+        });
+
+        function startObservingCalendar() {
+            const target = document.getElementById('calendar-days');
+            if (target) {
+                calendarObserver.observe(target, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    characterData: true
                 });
-            });
+            }
+        }
+        // --- END WATCHER ---
 
+        function renderSelectDatePlaceholder() {
+            document.getElementById('time-slots').innerHTML = `
+                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span class="material-symbols-outlined mb-2 opacity-50">calendar_month</span>
+                    <p class="text-sm italic">Select a highlighted date.</p>
+                </div>`;
+        }
+
+        // --- DOCTOR SELECTION & AJAX ---
         function selectDoctor(id, name, el) {
             state.doctor = id;
             state.doctorName = name;
             state.date = null;
             state.startTime = null;
+            state.bookingToken = null;
+            state.slotId = null;
             state.calendarDate = new Date();
+            clearBookingError();
 
             document.querySelectorAll('.doctor-card').forEach(n => {
                 n.classList.remove('selected');
@@ -429,11 +531,7 @@
             const dtSection = document.getElementById('datetime-section');
             dtSection.classList.remove('opacity-40', 'pointer-events-none', 'grayscale');
 
-            document.getElementById('time-slots').innerHTML = `
-                <div class="col-span-full h-32 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <span class="material-symbols-outlined mb-2 opacity-50 animate-bounce">place_item</span>
-                    <p class="text-sm italic">Please select a date from the calendar.</p>
-                </div>`;
+            renderSelectDatePlaceholder();
 
             updateSummary();
 
@@ -447,6 +545,7 @@
         }
 
         function renderCalendar() {
+            calendarObserver.disconnect();
             const calDays = document.getElementById('calendar-days');
             const viewYear = state.calendarDate.getFullYear();
             const viewMonth = state.calendarDate.getMonth();
@@ -489,6 +588,7 @@
             }
 
             calDays.innerHTML = headersHtml + daysHtml;
+            startObservingCalendar();
         }
 
         function changeMonth(delta) {
@@ -497,8 +597,12 @@
         }
 
         function selectDate(isoDate, el) {
+            calendarObserver.disconnect();
             state.date = isoDate;
             state.startTime = null;
+            state.bookingToken = null;
+            state.slotId = null;
+            clearBookingError();
 
             document.querySelectorAll('#calendar-days .calendar-day.cursor-pointer').forEach(n => {
                 n.classList.remove('selected');
@@ -507,6 +611,7 @@
             el.classList.add('selected');
             updateSummary();
             renderTimeSlots();
+            startObservingCalendar();
         }
 
         function renderTimeSlots() {
@@ -529,13 +634,16 @@
                 const timeLabel = slot.start_time.substring(0, 5);
                 btn.className = 'time-slot py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white transition-all flex items-center justify-center gap-2 group shadow-sm';
                 btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-primary transition-colors">schedule</span> ${timeLabel}`;
-                btn.onclick = () => selectTime(slot.start_time, btn);
+                btn.onclick = () => selectTime(slot, btn);
                 slotsContainer.appendChild(btn);
             });
         }
 
-        function selectTime(timeStr, el) {
-            state.startTime = timeStr;
+        function selectTime(slot, el) {
+            state.startTime = slot.start_time;
+            state.bookingToken = slot.booking_token;
+            state.slotId = slot.id;
+            clearBookingError();
 
             document.querySelectorAll('.time-slot').forEach(n => n.classList.remove('selected'));
             el.classList.add('selected');
@@ -554,7 +662,10 @@
             const btnBg = document.getElementById('btn-bg');
             const btnText = document.getElementById('btn-text');
 
-            if (state.date && state.startTime) {
+            btnText.innerHTML = `Confirm Booking
+                    <span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>`;
+
+            if (state.date && state.startTime && state.bookingToken && state.slotId) {
                 const prettyTime = state.startTime.substring(0, 5);
                 document.getElementById('summary-datetime').innerText = `${state.date} • ${prettyTime}`;
                 document.getElementById('summary-datetime').className = 'text-sm font-bold text-slate-800';
@@ -578,36 +689,54 @@
             }
         }
 
-        function confirmBooking() {
-            if (!state.doctor || !state.date || !state.startTime) return;
+        async function confirmBooking() {
+            if (!state.doctor || !state.date || !state.startTime || !state.bookingToken || !state.slotId) return;
 
             const btnConfirm = document.getElementById('btn-confirm');
             const btnText = document.getElementById('btn-text');
-            btnConfirm.disabled = true;
-            btnText.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Processing...';
 
-            fetch('/appointments/api/book/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    doctor_id: state.doctor,
-                    date: state.date,
-                    start_time: state.startTime
-                })
-            }).then(res => res.json()).then(data => {
-                if (data.error) {
-                    showToast(data.error, true);
-                    updateSummary(); // Reset button
+            clearBookingError();
+
+            try {
+                btnConfirm.disabled = true;
+                btnText.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Processing...';
+
+                const res = await fetch('/appointments/api/book/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_token: state.bookingToken
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    const errorMessage = data.error || 'Unable to complete booking. Please try again.';
+                    showBookingError(errorMessage);
+                    showToast(errorMessage, true);
+                    state.startTime = null;
+                    state.bookingToken = null;
+                    state.slotId = null;
+                    renderTimeSlots();
+                    updateSummary();
+                    return;
                 } else {
+                    clearBookingError();
                     showToast("Appointment Confirmed!", false);
                     setTimeout(() => {
                         window.location.href = '/appointments/patient/dashboard/';
                     }, 1500);
                 }
-            }).catch(err => {
+            } catch (err) {
+                showBookingError('Something went wrong! Check connection and try again.');
                 showToast('Something went wrong! Check connection.', true);
-                updateSummary(); // Reset button
-            });
+                state.startTime = null;
+                state.bookingToken = null;
+                state.slotId = null;
+                renderTimeSlots();
+            } finally {
+                updateSummary();
+            }
         }
 
         renderCalendar();
