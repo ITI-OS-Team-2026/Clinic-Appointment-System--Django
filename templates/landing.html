@@ -1,658 +1,283 @@
+{% load static %}
 <!doctype html>
-
-<html class="light" lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <title>Aura Health Systems | The Clinical Sanctuary</title>
-        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
-            rel="stylesheet"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-            rel="stylesheet"
-        />
-        <script id="tailwind-config">
-            tailwind.config = {
-                darkMode: "class",
-                theme: {
-                    extend: {
-                        colors: {
-                            "on-background": "#191c1e",
-                            "on-secondary-container": "#54647a",
-                            "surface-container-low": "#f2f4f6",
-                            "on-secondary-fixed-variant": "#38485d",
-                            "surface-container-lowest": "#ffffff",
-                            background: "#f7f9fb",
-                            surface: "#f7f9fb",
-                            "on-tertiary-container": "#92ffed",
-                            "on-surface": "#191c1e",
-                            "primary-fixed-dim": "#6cd3f7",
-                            "surface-bright": "#f7f9fb",
-                            "on-secondary": "#ffffff",
-                            "inverse-surface": "#2d3133",
-                            "on-error-container": "#93000a",
-                            tertiary: "#005d53",
-                            "surface-variant": "#e0e3e5",
-                            "secondary-container": "#d0e1fb",
-                            outline: "#6f787d",
-                            "on-surface-variant": "#3f484c",
-                            "surface-tint": "#006780",
-                            "secondary-fixed": "#d3e4fe",
-                            "primary-fixed": "#b7eaff",
-                            secondary: "#505f76",
-                            "inverse-primary": "#6cd3f7",
-                            "tertiary-container": "#00786c",
-                            "primary-container": "#007490",
-                            "on-error": "#ffffff",
-                            "on-tertiary": "#ffffff",
-                            "error-container": "#ffdad6",
-                            "on-primary-fixed-variant": "#004e61",
-                            "on-primary": "#ffffff",
-                            "inverse-on-surface": "#eff1f3",
-                            "surface-container": "#eceef0",
-                            primary: "#005a70",
-                            "tertiary-fixed-dim": "#4fdbc8",
-                            "tertiary-fixed": "#71f8e4",
-                            "surface-container-high": "#e6e8ea",
-                            error: "#ba1a1a",
-                            "outline-variant": "#bec8cd",
-                            "on-primary-fixed": "#001f28",
-                            "on-tertiary-fixed": "#00201c",
-                            "on-primary-container": "#d2f1ff",
-                            "on-tertiary-fixed-variant": "#005048",
-                            "surface-container-highest": "#e0e3e5",
-                            "on-secondary-fixed": "#0b1c30",
-                            "secondary-fixed-dim": "#b7c8e1",
-                            "surface-dim": "#d8dadc",
-                        },
-                        borderRadius: {
-                            DEFAULT: "0.125rem",
-                            lg: "0.25rem",
-                            xl: "0.5rem",
-                            full: "0.75rem",
-                        },
-                        fontFamily: {
-                            headline: ["Manrope", "sans-serif"],
-                            body: ["Inter", "sans-serif"],
-                            label: ["Inter", "sans-serif"],
-                        },
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Aura Health Systems | The Future of Medical Excellence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#005a70',
+                        secondary: '#0F172A',
+                        accent: '#007490',
+                        'primary-container': '#007490',
                     },
-                },
-            };
-        </script>
-        <style>
-            body {
-                font-family: "Inter", sans-serif;
-                background-color: theme("colors.background");
-                color: theme("colors.on-background");
-            }
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6,
-            .font-headline {
-                font-family: "Manrope", sans-serif;
-            }
-        </style>
-    </head>
-    <body class="antialiased min-h-screen flex flex-col">
-        <!-- TopNavBar Component -->
-        <header
-            class="bg-[#f7f9fb]/90 dark:bg-slate-950/90 backdrop-blur-xl docked full-width top-0 sticky z-50 shadow-[0_10px_40px_rgba(14,116,144,0.06)] bg-gradient-to-b from-[#f2f4f6] to-transparent"
-        >
-            <div
-                class="flex justify-between items-center w-full px-4 md:px-8 lg:px-12 py-6 max-w-screen-2xl mx-auto"
-            >
-                <a
-                    href="/"
-                    class="text-2xl font-manrope font-extrabold tracking-tighter text-cyan-800 dark:text-cyan-300 hover:opacity-90 transition-opacity"
-                    >Aura Health
-                    <span class="hidden lg:inline">Systems</span></a
-                >
-                <nav
-                    class="hidden md:flex space-x-4 md:space-x-6 lg:space-x-8 font-manrope tracking-tight font-semibold"
-                >
-                    <!-- Features is conceptually active as it's a marketing landing page focusing on features -->
-                    <a
-                        class="text-cyan-700 dark:text-cyan-300 font-bold border-b-2 border-cyan-700 dark:border-cyan-300 pb-1 hover:text-cyan-600 dark:hover:text-cyan-200 transition-all duration-300 transform hover:scale-105"
-                        href="#features"
-                        >Features</a
-                    >
-                    <a
-                        class="text-slate-600 dark:text-slate-400 font-medium hover:text-cyan-600 dark:hover:text-cyan-200 transition-all duration-300 transform hover:scale-105"
-                        href="#features"
-                        >For Doctors</a
-                    >
-                    <a
-                        class="text-slate-600 dark:text-slate-400 font-medium hover:text-cyan-600 dark:hover:text-cyan-200 transition-all duration-300 transform hover:scale-105"
-                        href="#features"
-                        >For Patients</a
-                    >
-                    <a
-                        class="text-slate-600 dark:text-slate-400 font-medium hover:text-cyan-600 dark:hover:text-cyan-200 transition-all duration-300 transform hover:scale-105"
-                        href="#contact-form"
-                        >Contact</a
-                    >
-                </nav>
-                <div class="hidden md:flex space-x-4 items-center">
-                    {% if request.user.is_authenticated %}
-                    <div
-                        class="flex items-center gap-x-3 md:gap-x-4 lg:gap-x-6"
-                    >
-                        <a
-                            href="/appointments/patient/book/"
-                            class="bg-gradient-to-r from-primary to-primary-container text-white px-4 md:px-5 lg:px-6 py-2 rounded-lg font-manrope font-semibold shadow-md hover:shadow-lg transition-all duration-300"
-                        >
-                            Book Appointment
-                        </a>
-
-                        <div class="relative" id="user-menu-container">
-                            <button
-                                id="user-menu-btn"
-                                type="button"
-                                class="flex items-center gap-2 bg-slate-50 py-2 px-4 rounded-full border border-slate-100 hover:border-primary/30 transition-all cursor-pointer"
-                            >
-                                <div
-                                    class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center text-white font-bold text-xs shadow-sm"
-                                >
-                                    {{ request.user.username|make_list|first|upper }}
-                                </div>
-                                <span
-                                    class="text-sm font-semibold text-slate-700 hidden lg:inline"
-                                    >{{ request.user.username }}</span
-                                >
-                                <span
-                                    class="material-symbols-outlined text-sm text-slate-500"
-                                    >expand_more</span
-                                >
-                            </button>
-
-                            <div
-                                id="user-dropdown"
-                                class="absolute right-0 mt-2 bg-white shadow-xl rounded-xl border border-slate-100 min-w-[220px] py-2 opacity-0 scale-95 pointer-events-none transition-all duration-200 origin-top-right z-50"
-                            >
-                                <a
-                                    href="/users/patient/profile/"
-                                    class="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="material-symbols-outlined text-[18px]"
-                                            >person</span
-                                        >
-                                        My Profile
-                                    </div>
-                                </a>
-                                <a
-                                    href="/appointments/patient/dashboard/"
-                                    class="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="material-symbols-outlined text-[18px]"
-                                            >dashboard</span
-                                        >
-                                        Dashboard
-                                    </div>
-                                </a>
-                                <div class="h-px bg-slate-100 my-2"></div>
-                                <a
-                                    href="/users/logout/"
-                                    class="block px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="material-symbols-outlined text-[18px]"
-                                            >logout</span
-                                        >
-                                        Logout
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="flex items-center gap-4">
-                        <a
-                            href="/users/login/"
-                            class="font-manrope font-semibold text-cyan-700 px-4 py-2 hover:text-cyan-600 transition-all duration-300"
-                            >Login</a
-                        >
-                        <a
-                            href="/users/register/"
-                            class="bg-gradient-to-r from-primary to-primary-container text-white px-6 py-2 rounded-lg font-manrope font-semibold shadow-md hover:shadow-lg transition-all duration-300"
-                            >Book Demo</a
-                        >
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </header>
-        <main class="flex-grow">
-            <!-- Hero Section -->
-            <section
-                class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden"
-            >
-                <div class="absolute inset-0 z-0">
-                    <img
-                        alt="Modern clean hospital hallway with soft blue lighting and blurred medical professionals walking in the distance"
-                        class="w-full h-full object-cover opacity-20"
-                        data-alt="Modern clean hospital hallway with soft blue lighting and blurred medical professionals walking in the distance, evoking calm and clinical excellence"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsepc5ehbft_48Bw-Bs1q0Koo4QWU0JRIs-TjEBVbwLHp2h9OZ4hU4IoRsIhpcdL7X3AfZ9yCYMCzhoaxT3QbU_OvD4kO7XEnSnLUU9X_R1fs0wut6I1GcJGMNw9LfBz2ydHLDZIngjCJR3wphYhucuywJ0pA28784JrWS_AfgnnP9RoZVIGP1q_IpafmLlCLaXuXkN8g3gdoNxbbH-134QtAplQMxIYjQft786HzDXllp-0V90zWAAUokBL7DmrhTFEcqIA0M15k"
-                    />
-                    <div
-                        class="absolute inset-0 bg-gradient-to-b from-surface/80 to-surface"
-                    ></div>
-                </div>
-                <div
-                    class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 text-center"
-                >
-                    <h1
-                        class="text-5xl lg:text-7xl font-headline font-extrabold text-on-surface tracking-tight mb-8"
-                    >
-                        The Ethereal Clinic.<br />
-                        <span class="text-primary"
-                            >Precision in Every Care Moment.</span
-                        >
-                    </h1>
-                    <p
-                        class="text-xl lg:text-2xl font-body text-on-surface-variant max-w-3xl mx-auto mb-12 leading-relaxed"
-                    >
-                        Aura Health Systems brings soft minimalism to medical
-                        management. We transform complex workflows into calming,
-                        editorial precision, empowering doctors and comforting
-                        patients.
-                    </p>
-                    <div
-                        class="flex flex-col sm:flex-row justify-center items-center gap-6"
-                    >
-                        {% if request.user.is_authenticated %}
-                        <a
-                            href="/appointments/patient/book/"
-                            class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-4 rounded-lg font-headline font-semibold text-lg shadow-[0_4px_20px_rgba(0,90,112,0.15)] hover:shadow-[0_6px_25px_rgba(0,90,112,0.25)] transition-all duration-300 w-full sm:w-auto text-center inline-block"
-                        >
-                            Book Appointment
-                        </a>
-                        {% else %}
-                        <a
-                            href="/users/register/"
-                            class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-4 rounded-lg font-headline font-semibold text-lg shadow-[0_4px_20px_rgba(0,90,112,0.15)] hover:shadow-[0_6px_25px_rgba(0,90,112,0.25)] transition-all duration-300 w-full sm:w-auto text-center inline-block"
-                        >
-                            Book a Demo
-                        </a>
-                        {% endif %}
-                        <a
-                            href="#features"
-                            class="border border-outline-variant bg-surface-container-lowest text-primary px-8 py-4 rounded-lg font-headline font-semibold text-lg hover:bg-surface-container-low transition-colors duration-300 w-full sm:w-auto text-center inline-block"
-                        >
-                            Learn More
-                        </a>
-                    </div>
-                </div>
-            </section>
-            <!-- Key Value Propositions -->
-            <section id="features" class="py-24 bg-surface-container-low">
-                <div class="max-w-7xl mx-auto px-6 lg:px-12">
-                    <div class="text-center mb-16">
-                        <h2
-                            class="text-3xl lg:text-4xl font-headline font-extrabold text-on-surface mb-4"
-                        >
-                            Harmony Across the Clinic
-                        </h2>
-                        <p class="font-body text-on-surface-variant text-lg">
-                            Designed for the entire healthcare ecosystem.
-                        </p>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <!-- Value Card 1 -->
-                        <div
-                            class="bg-surface-container-lowest rounded-xl p-8 transition-transform duration-300 hover:-translate-y-2"
-                        >
-                            <div
-                                class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center mb-6"
-                            >
-                                <span
-                                    class="material-symbols-outlined text-on-primary-fixed text-3xl"
-                                    data-icon="monitor_heart"
-                                    >monitor_heart</span
-                                >
-                            </div>
-                            <h3
-                                class="text-xl font-headline font-semibold text-on-surface mb-3"
-                            >
-                                For Patients
-                            </h3>
-                            <p
-                                class="font-body text-on-surface-variant leading-relaxed"
-                            >
-                                Frictionless booking, transparent records, and a
-                                soothing digital experience that builds trust
-                                before they even enter the waiting room.
-                            </p>
-                        </div>
-                        <!-- Value Card 2 -->
-                        <div
-                            class="bg-surface-container-lowest rounded-xl p-8 transition-transform duration-300 hover:-translate-y-2"
-                        >
-                            <div
-                                class="w-16 h-16 rounded-full bg-secondary-fixed flex items-center justify-center mb-6"
-                            >
-                                <span
-                                    class="material-symbols-outlined text-on-secondary-fixed text-3xl"
-                                    data-icon="stethoscope"
-                                    >stethoscope</span
-                                >
-                            </div>
-                            <h3
-                                class="text-xl font-headline font-semibold text-on-surface mb-3"
-                            >
-                                For Doctors
-                            </h3>
-                            <p
-                                class="font-body text-on-surface-variant leading-relaxed"
-                            >
-                                Editorial-style patient records that reduce
-                                cognitive load. Smart slot generation allows
-                                focus on care, not scheduling logistics.
-                            </p>
-                        </div>
-                        <!-- Value Card 3 -->
-                        <div
-                            class="bg-surface-container-lowest rounded-xl p-8 transition-transform duration-300 hover:-translate-y-2"
-                        >
-                            <div
-                                class="w-16 h-16 rounded-full bg-tertiary-container flex items-center justify-center mb-6"
-                            >
-                                <span
-                                    class="material-symbols-outlined text-on-tertiary-container text-3xl"
-                                    data-icon="admin_panel_settings"
-                                    >admin_panel_settings</span
-                                >
-                            </div>
-                            <h3
-                                class="text-xl font-headline font-semibold text-on-surface mb-3"
-                            >
-                                For Admins
-                            </h3>
-                            <p
-                                class="font-body text-on-surface-variant leading-relaxed"
-                            >
-                                Total operational oversight without the
-                                spreadsheet clutter. Real-time analytics
-                                presented in a clean, digestible format.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Contact Form Section -->
-            <section
-                id="contact-form"
-                class="py-24 bg-surface-container-lowest"
-            >
-                <div class="max-w-4xl mx-auto px-6 lg:px-12">
-                    <div class="text-center mb-16">
-                        <h2
-                            class="text-3xl lg:text-4xl font-headline font-extrabold text-on-surface mb-4"
-                        >
-                            Get in Touch
-                        </h2>
-                        <p class="font-body text-on-surface-variant text-lg">
-                            Have questions? We'd love to hear from you.
-                        </p>
-                    </div>
-                    <form class="space-y-6" id="contactForm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label
-                                    for="first_name"
-                                    class="block text-sm font-medium text-on-surface mb-2"
-                                    >First Name</label
-                                >
-                                <input
-                                    type="text"
-                                    id="first_name"
-                                    name="first_name"
-                                    required
-                                    class="w-full rounded-lg border-outline-variant bg-surface px-4 py-3 text-on-surface focus:border-primary focus:ring-primary shadow-sm"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    for="last_name"
-                                    class="block text-sm font-medium text-on-surface mb-2"
-                                    >Last Name</label
-                                >
-                                <input
-                                    type="text"
-                                    id="last_name"
-                                    name="last_name"
-                                    required
-                                    class="w-full rounded-lg border-outline-variant bg-surface px-4 py-3 text-on-surface focus:border-primary focus:ring-primary shadow-sm"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label
-                                for="email"
-                                class="block text-sm font-medium text-on-surface mb-2"
-                                >Email Address</label
-                            >
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required
-                                class="w-full rounded-lg border-outline-variant bg-surface px-4 py-3 text-on-surface focus:border-primary focus:ring-primary shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                for="message"
-                                class="block text-sm font-medium text-on-surface mb-2"
-                                >Message</label
-                            >
-                            <textarea
-                                id="message"
-                                name="message"
-                                rows="4"
-                                required
-                                class="w-full rounded-lg border-outline-variant bg-surface px-4 py-3 text-on-surface focus:border-primary focus:ring-primary shadow-sm"
-                            ></textarea>
-                        </div>
-                        <div class="text-center mt-8">
-                            <button
-                                type="submit"
-                                class="bg-primary text-on-primary px-10 py-4 rounded-lg font-headline font-semibold text-lg shadow-md hover:shadow-lg hover:bg-[#004e61] transition-all duration-300"
-                            >
-                                Send Message
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <script>
-                document
-                    .getElementById("contactForm")
-                    .addEventListener("submit", function (e) {
-                        e.preventDefault();
-                        const firstName =
-                            document.getElementById("first_name").value;
-                        const lastName =
-                            document.getElementById("last_name").value;
-                        const email = document.getElementById("email").value;
-                        const message =
-                            document.getElementById("message").value;
-
-                        const subject = encodeURIComponent(
-                            "New Contact Form Inquiry",
-                        );
-                        const body = encodeURIComponent(
-                            `Name: ${firstName} ${lastName}\nEmail: ${email}\n\nMessage:\n${message}`,
-                        );
-
-                        window.open(
-                            `mailto:itiaurahealthsystem@gmail.com?subject=${subject}&body=${body}`,
-                            "_blank",
-                        );
-                    });
-            </script>
-
-            <!-- Final CTA Section -->
-            <section class="py-32 bg-primary relative overflow-hidden">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-primary to-primary-container"
-                ></div>
-                <!-- Decorative blur -->
-                <div
-                    class="absolute top-0 right-0 w-96 h-96 bg-primary-fixed-dim rounded-full mix-blend-multiply filter blur-3xl opacity-30"
-                ></div>
-                <div
-                    class="absolute bottom-0 left-0 w-96 h-96 bg-tertiary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-                ></div>
-                <div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
-                    <h2
-                        class="text-4xl lg:text-5xl font-headline font-extrabold text-on-primary mb-8"
-                    >
-                        Ready to Elevate Your Clinic?
-                    </h2>
-                    <p
-                        class="text-xl font-body text-on-primary-container mb-12"
-                    >
-                        Join leading health centers that have transformed their
-                        operations with Aura Health Systems.
-                    </p>
-                    {% if request.user.is_authenticated %}
-                    <a
-                        href="/appointments/patient/book/"
-                        class="inline-block bg-surface-container-lowest text-primary px-10 py-5 rounded-lg font-headline font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                        Book Appointment
-                    </a>
-                    {% else %}
-                    <a
-                        href="/users/register/"
-                        class="inline-block bg-surface-container-lowest text-primary px-10 py-5 rounded-lg font-headline font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                        Join the Future of Care
-                    </a>
-                    {% endif %}
-                </div>
-            </section>
-        </main>
-        <!-- Footer Component -->
-        <footer
-            id="contact"
-            class="bg-[#e6e8ea] dark:bg-slate-900 full-width py-16 tonal-contrast-surface-high flat no-shadows"
-        >
-            <div
-                class="grid grid-cols-1 md:grid-cols-4 gap-12 px-12 max-w-7xl mx-auto"
-            >
-                <div class="col-span-1 md:col-span-1">
-                    <a
-                        href="/"
-                        class="block font-manrope text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 hover:opacity-90 transition-opacity"
-                        >Aura Health Systems</a
-                    >
-                    <p
-                        class="font-inter text-sm leading-relaxed text-slate-500 dark:text-slate-400"
-                    >
-                        © 2024 Aura Health Systems. Precision in Care.
-                    </p>
-                </div>
-                <div
-                    class="col-span-1 md:col-span-3 flex flex-wrap gap-8 md:justify-end"
-                >
-                    <a
-                        class="font-inter text-sm leading-relaxed text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors"
-                        href="#"
-                        >Privacy Policy</a
-                    >
-                    <a
-                        class="font-inter text-sm leading-relaxed text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors"
-                        href="#"
-                        >Terms of Service</a
-                    >
-                    <a
-                        class="font-inter text-sm leading-relaxed text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors"
-                        href="#"
-                        >HIPAA Compliance</a
-                    >
-                    <a
-                        class="font-inter text-sm leading-relaxed text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors"
-                        href="#"
-                        >Support Center</a
-                    >
-                </div>
-            </div>
-        </footer>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const userBtn = document.getElementById("user-menu-btn");
-                const userDropdown = document.getElementById("user-dropdown");
-                if (userBtn && userDropdown) {
-                    userBtn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const isExpanded = !userDropdown.classList.contains(
-                            "pointer-events-none",
-                        );
-
-                        if (isExpanded) {
-                            userDropdown.classList.add(
-                                "opacity-0",
-                                "scale-95",
-                                "pointer-events-none",
-                            );
-                            userDropdown.classList.remove(
-                                "opacity-100",
-                                "scale-100",
-                            );
-                        } else {
-                            userDropdown.classList.remove(
-                                "opacity-0",
-                                "scale-95",
-                                "pointer-events-none",
-                            );
-                            userDropdown.classList.add(
-                                "opacity-100",
-                                "scale-100",
-                            );
-                        }
-                    });
-
-                    // Close clicking outside
-                    document.addEventListener("click", (e) => {
-                        if (
-                            !userBtn.contains(e.target) &&
-                            !userDropdown.contains(e.target)
-                        ) {
-                            if (
-                                !userDropdown.classList.contains(
-                                    "pointer-events-none",
-                                )
-                            ) {
-                                userDropdown.classList.add(
-                                    "opacity-0",
-                                    "scale-95",
-                                    "pointer-events-none",
-                                );
-                                userDropdown.classList.remove(
-                                    "opacity-100",
-                                    "scale-100",
-                                );
-                            }
-                        }
-                    });
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
                 }
-            });
-        </script>
-    </body>
+            }
+        }
+    </script>
+    <style>
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(0, 90, 112, 0.1) 0%, rgba(0, 116, 144, 0.05) 100%);
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #005a70, #007490);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #005a70 0%, #007490 100%);
+        }
+        .feature-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 90, 112, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-[#FAFAFA] text-secondary font-sans overflow-x-hidden">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-[100] glass-nav">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined">health_and_safety</span>
+                </div>
+                <span class="text-2xl font-display font-extrabold tracking-tight text-secondary">AURA<span class="text-primary">HEALTH</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-10">
+                <a href="#features" class="text-sm font-semibold hover:text-primary transition-colors">Features</a>
+                <a href="#about" class="text-sm font-semibold hover:text-primary transition-colors">About</a>
+                <a href="#contact" class="text-sm font-semibold hover:text-primary transition-colors">Contact</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                {% if request.user.is_authenticated %}
+                    <div class="flex items-center gap-3">
+                        {% if request.user.role == 'PATIENT' %}
+                            <a href="{% url 'patient_dashboard' %}" class="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm hover:bg-[#004e61] transition-all shadow-lg shadow-primary/20">Go to Dashboard</a>
+                        {% elif request.user.role == 'DOCTOR' %}
+                            <a href="{% url 'doctor_queue' %}" class="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm hover:bg-[#004e61] transition-all shadow-lg shadow-primary/20">Go to Dashboard</a>
+                        {% elif request.user.role == 'RECEPTIONIST' %}
+                            <a href="{% url 'receptionist_queue' %}" class="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm hover:bg-[#004e61] transition-all shadow-lg shadow-primary/20">Go to Dashboard</a>
+                        {% elif request.user.role == 'ADMIN' or request.user.is_superuser %}
+                            <a href="{% url 'admin_dashboard' %}" class="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm hover:bg-[#004e61] transition-all shadow-lg shadow-primary/20">Go to Dashboard</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="px-6 py-2.5 border-2 border-rose-100 text-rose-600 rounded-full font-bold text-sm hover:bg-rose-50 transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">logout</span>
+                            Logout
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-sm font-bold hover:text-primary transition-colors">Login</a>
+                    <a href="{% url 'register' %}" class="px-6 py-2.5 bg-secondary text-white rounded-full font-bold text-sm hover:bg-slate-800 transition-all shadow-lg">Register Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-40 pb-20 overflow-hidden hero-gradient">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary font-bold text-xs mb-6 border border-primary/20">
+                    <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    NEXT GENERATION HEALTHCARE
+                </div>
+                <h1 class="text-6xl lg:text-7xl font-display font-extrabold leading-[1.1] mb-8">
+                    Elevate Your <span class="text-gradient">Medical Experience</span> with Aura.
+                </h1>
+                <p class="text-lg text-slate-600 mb-10 leading-relaxed max-w-xl">
+                    The most intuitive clinic management system ever built. Streamline appointments, patient records, and doctor workflows with ethereal precision.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'register' %}" class="px-8 py-4 primary-gradient text-white rounded-2xl font-bold text-lg hover:shadow-2xl transition-all shadow-xl shadow-primary/30 flex items-center gap-2">
+                        Get Started <span class="material-symbols-outlined">arrow_forward</span>
+                    </a>
+                    <a href="#features" class="px-8 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all">
+                        Explore Features
+                    </a>
+                </div>
+            </div>
+
+            <div class="relative lg:h-[600px] flex items-center justify-center">
+                <div class="absolute w-[120%] h-[120%] bg-primary/5 rounded-full blur-[100px] -z-10"></div>
+                <div class="relative w-full rounded-[40px] overflow-hidden shadow-2xl border-4 border-white transform hover:scale-[1.02] transition-transform duration-700">
+                    <img src="{% static 'images/hero.png' %}" alt="Clinic Lobby" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-secondary/40 to-transparent"></div>
+                    <div class="absolute bottom-8 left-8 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 max-w-[280px]">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-primary">verified</span>
+                            <span class="font-bold text-sm">Trusted by 50+ Clinics</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Delivering excellence in medical administration across the globe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 bg-secondary text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px]"></div>
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
+            <div>
+                <div class="text-5xl font-display font-extrabold text-primary mb-2">10k+</div>
+                <div class="text-slate-400 font-medium">Happy Patients</div>
+            </div>
+            <div>
+                <div class="text-5xl font-display font-extrabold text-primary mb-2">500+</div>
+                <div class="text-slate-400 font-medium">Expert Doctors</div>
+            </div>
+            <div>
+                <div class="text-5xl font-display font-extrabold text-primary mb-2">99%</div>
+                <div class="text-slate-400 font-medium">Satisfaction Rate</div>
+            </div>
+            <div>
+                <div class="text-5xl font-display font-extrabold text-primary mb-2">24/7</div>
+                <div class="text-slate-400 font-medium">Priority Support</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-20">
+                <h2 class="text-4xl lg:text-5xl font-display font-extrabold mb-6">Designed for Every <span class="text-primary">Role</span>.</h2>
+                <p class="text-slate-500">Whether you're a patient, a doctor, or an administrator, Aura provides a seamless, tailored experience.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Patient Feature -->
+                <div class="feature-card bg-white p-10 rounded-[32px] border border-slate-100">
+                    <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8">
+                        <span class="material-symbols-outlined text-3xl">patient_list</span>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Patient Portal</h3>
+                    <p class="text-slate-500 leading-relaxed mb-6">Book appointments instantly, view your medical history, and manage your health journey with ease.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Smart Booking</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Digital Records</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Instant Notifications</li>
+                    </ul>
+                </div>
+
+                <!-- Doctor Feature -->
+                <div class="feature-card bg-white p-10 rounded-[32px] border border-slate-100">
+                    <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8">
+                        <span class="material-symbols-outlined text-3xl">medical_services</span>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Doctor Suite</h3>
+                    <p class="text-slate-500 leading-relaxed mb-6">Advanced queue management, diagnostic tools, and schedule planning for the modern physician.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Patient Queues</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Digital Prescriptions</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Smart Schedules</li>
+                    </ul>
+                </div>
+
+                <!-- Admin Feature -->
+                <div class="feature-card bg-white p-10 rounded-[32px] border border-slate-100">
+                    <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8">
+                        <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Admin Dashboard</h3>
+                    <p class="text-slate-500 leading-relaxed mb-6">Complete operational oversight with real-time analytics and staff management tools.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Staff Management</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> Usage Analytics</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-600"><span class="material-symbols-outlined text-xs text-primary">check_circle</span> System Controls</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-32 bg-primary relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+            <h2 class="text-5xl lg:text-6xl font-display font-extrabold text-white mb-8">Ready to transform your healthcare?</h2>
+            <p class="text-xl text-teal-50 mb-12 max-w-2xl mx-auto">Join hundreds of healthcare providers who trust Aura Health Systems for their daily operations.</p>
+            <div class="flex flex-wrap justify-center gap-6">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'PATIENT' %}
+                        <a href="{% url 'patient_dashboard' %}" class="px-10 py-5 bg-white text-primary rounded-2xl font-bold text-xl hover:shadow-2xl transition-all">Go to Dashboard</a>
+                    {% elif request.user.role == 'DOCTOR' %}
+                        <a href="{% url 'doctor_queue' %}" class="px-10 py-5 bg-white text-primary rounded-2xl font-bold text-xl hover:shadow-2xl transition-all">Go to Dashboard</a>
+                    {% elif request.user.role == 'RECEPTIONIST' %}
+                        <a href="{% url 'receptionist_queue' %}" class="px-10 py-5 bg-white text-primary rounded-2xl font-bold text-xl hover:shadow-2xl transition-all">Go to Dashboard</a>
+                    {% elif request.user.role == 'ADMIN' or request.user.is_superuser %}
+                        <a href="{% url 'admin_dashboard' %}" class="px-10 py-5 bg-white text-primary rounded-2xl font-bold text-xl hover:shadow-2xl transition-all">Go to Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'register' %}" class="px-10 py-5 bg-white text-primary rounded-2xl font-bold text-xl hover:shadow-2xl transition-all">Start Your Journey</a>
+                    <a href="#contact" class="px-10 py-5 bg-transparent border-2 border-white/30 text-white rounded-2xl font-bold text-xl hover:bg-white/10 transition-all">Contact Sales</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-white border-t border-slate-100 py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-20">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-sm">health_and_safety</span>
+                        </div>
+                        <span class="text-xl font-display font-extrabold tracking-tight">AURA<span class="text-primary">HEALTH</span></span>
+                    </div>
+                    <p class="text-sm text-slate-500 leading-relaxed">Pioneering the future of medical administration with minimalist design and powerful technology.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">Product</h4>
+                    <ul class="space-y-4 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-primary transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Security</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">Company</h4>
+                    <ul class="space-y-4 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-primary transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">Connect</h4>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center hover:text-primary transition-all"><span class="material-symbols-outlined">alternate_email</span></a>
+                        <a href="#" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center hover:text-primary transition-all"><span class="material-symbols-outlined">call</span></a>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-slate-100 text-center text-xs text-slate-400">
+                &copy; 2024 Aura Health Systems. All rights reserved. Precision in Care.
+            </div>
+        </div>
+    </footer>
+</body>
 </html>
