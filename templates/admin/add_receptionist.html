@@ -134,6 +134,22 @@
             </p>
           </div>
         </div>
+        <!-- Messages Display -->
+        {% if messages %}
+          <div class="mb-8 space-y-4">
+            {% for message in messages %}
+              <div class="p-5 rounded-2xl flex items-center gap-4 {% if 'error' in message.tags %}bg-rose-50 text-rose-700 border border-rose-100{% else %}bg-emerald-50 text-emerald-700 border border-emerald-100{% endif %} shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <span class="material-symbols-outlined text-2xl">
+                  {% if 'error' in message.tags %}error{% else %}check_circle{% endif %}
+                </span>
+                <div>
+                  <p class="text-sm font-bold leading-none">{{ message }}</p>
+                  <p class="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-1">System Alert</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
         <div class="space-y-8">
           <!-- Simplified Form Section -->
           <form

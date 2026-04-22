@@ -117,7 +117,7 @@ def redirect_based_on_role(request):
         return redirect('doctor_queue')
     elif user.role == 'RECEPTIONIST':
         return redirect('receptionist_queue')
-    elif user.role == 'ADMIN':
+    elif user.role == 'ADMIN' or user.is_superuser:
         return redirect('admin_dashboard')
     else:
         logout(request)

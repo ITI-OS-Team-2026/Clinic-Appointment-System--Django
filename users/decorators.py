@@ -17,6 +17,6 @@ def is_receptionist(user):
     raise PermissionDenied
 
 def is_admin_role(user):
-    if user.is_authenticated and user.role == 'ADMIN':
+    if user.is_authenticated and (user.role == 'ADMIN' or user.is_superuser):
         return True
     raise PermissionDenied

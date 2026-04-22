@@ -99,17 +99,20 @@
             </p>
           </header>
           <!-- Messages Display -->
-          {% if messages %} {% for message in messages %}
-          <div
-            class="mb-6 p-4 rounded-lg {% if message.tags %}bg-red-50 border border-red-200{% else %}bg-blue-50 border border-blue-200{% endif %}"
-          >
-            <p
-              class="text-sm {% if message.tags %}text-red-700{% else %}text-blue-700{% endif %}"
-            >
-              {{ message }}
-            </p>
-          </div>
-          {% endfor %} {% endif %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="django-message mb-6 p-4 rounded-lg {% if 'error' in message.tags %}bg-red-50 border border-red-200{% else %}bg-emerald-50 border border-emerald-200{% endif %} animate-in fade-in slide-in-from-top-2 duration-300">
+                <p class="text-sm {% if 'error' in message.tags %}text-red-700{% else %}text-emerald-700{% endif %} font-medium flex items-center gap-2">
+                  {% if 'error' in message.tags %}
+                    <span class="material-symbols-outlined text-lg">error</span>
+                  {% else %}
+                    <span class="material-symbols-outlined text-lg">check_circle</span>
+                  {% endif %}
+                  {{ message }}
+                </p>
+              </div>
+            {% endfor %}
+          {% endif %}
           <form method="POST" class="space-y-6">
             {% csrf_token %}
             <!-- Username Field -->
@@ -237,5 +240,18 @@
     <div
       class="fixed bottom-[-10%] left-[-5%] w-[30vw] h-[30vw] bg-tertiary/5 rounded-full blur-[100px] pointer-events-none -z-10"
     ></div>
+    <script>
+      // Auto-hide messages after 5 seconds
+      document.addEventListener('DOMContentLoaded', () => {
+        const messages = document.querySelectorAll('.django-message');
+        messages.forEach(msg => {
+          setTimeout(() => {
+            msg.classList.add('opacity-0', '-translate-y-4');
+            msg.style.transition = 'all 0.6s ease-in-out';
+            setTimeout(() => msg.remove(), 600);
+          }, 5000);
+        });
+      });
+    </script>
   </body>
 </html>
