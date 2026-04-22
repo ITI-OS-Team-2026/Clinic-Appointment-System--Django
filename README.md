@@ -1,6 +1,6 @@
 # 🏥 Aura Health - Clinic Appointment System
 
-![Landing Page](https://github.com/user-attachments/assets/3cccc3ad-95dc-47ab-83cc-13a6a493cdcd)
+![Landing Page](https://github.com/user-attachments/assets/59322af3-985a-41db-ae41-2b8749f1681d)
 > A comprehensive Django-based clinic management system designed to streamline appointments, patient records, and clinic operations across four roles: Patients, Doctors, Receptionists, and Administrators.
 
 ## 🌟 Features
