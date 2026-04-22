@@ -9,6 +9,8 @@ from users.models import User, DoctorProfile
 import csv
 from django.http import HttpResponse
 
+@login_required(login_url='login')
+@user_passes_test(is_admin_role)
 def admin_dashboard(request):
     last_24h = timezone.now() - timedelta(hours=24)
     recent_patients = User.objects.filter(

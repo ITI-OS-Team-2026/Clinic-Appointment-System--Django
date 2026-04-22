@@ -343,6 +343,14 @@
                 showToast(err.message || "Network Error: check console", true);
             });
         }
+        // Auto-handle Django Messages
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message }}", {% if 'error' in message.tags %}true{% else %}false{% endif %});
+                {% endfor %}
+            {% endif %}
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

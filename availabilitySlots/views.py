@@ -7,6 +7,8 @@ from .models import AppointmentSlot
 from .serializers import AppointmentSlotSerializer
 from .services import generate_slots_for_range
 from django.contrib.auth import get_user_model
+from appointments.models import Appointment
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -19,11 +21,15 @@ class DoctorAvailableSlotsView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'Doctor not found'}, status=404)
 
-        today = date.today()
+        
+        now = timezone.now()
+        today = now.date()
+        current_time = now.time()
+
         in_30_days = today + timedelta(days=30)
         generate_slots_for_range(doctor, today, in_30_days)
 
-        from appointments.models import Appointment
+        
 
         active_appointments = Appointment.objects.filter(
             doctor=doctor,
@@ -38,7 +44,17 @@ class DoctorAvailableSlotsView(APIView):
         ).order_by('date', 'start_time')
 
         active_set = set(active_appointments)
-        filtered_slots = [s for s in slots if (s.date, s.start_time) not in active_set]
+        
+        # Filter: Exclude past times if the date is today
+        filtered_slots = []
+        for s in slots:
+            if (s.date, s.start_time) in active_set:
+                continue
+            
+            if s.date == today and s.start_time <= current_time:
+                continue
+                
+            filtered_slots.append(s)
 
         serializer = AppointmentSlotSerializer(filtered_slots, many=True)
         slots_with_tokens = []
