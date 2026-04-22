@@ -208,6 +208,7 @@
                     placeholder="Dr. Jonathan Smith"
                     type="text"
                     name="full_name"
+                    required
                   />
                 </div>
                 <div class="space-y-1">
@@ -233,6 +234,7 @@
                     placeholder="+1 (555) 000-0000"
                     type="tel"
                     name="contact_number"
+                    required
                   />
                 </div>
                 <div class="space-y-1">
@@ -280,6 +282,7 @@
                     placeholder="MD-8829-XJ"
                     type="text"
                     name="license_number"
+                    required
                   />
                 </div>
                 <div class="space-y-1">
@@ -292,6 +295,8 @@
                     placeholder="8"
                     type="number"
                     name="experience_years"
+                    min="0"
+                    required
                   />
                 </div>
                 <div class="md:col-span-2 space-y-1">
@@ -345,8 +350,9 @@
                   <select
                     class="w-full bg-surface-container-high/40 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 text-sm"
                     name="specialization"
+                    required
                   >
-                    <option>Select Department</option>
+                    <option value="">Select Department</option>
                     <option>Cardiology</option>
                     <option>Neurology</option>
                     <option>Pediatrics</option>

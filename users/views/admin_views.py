@@ -38,24 +38,40 @@ def add_doctor(request):
         spec = request.POST.get('specialization')
         license_num = request.POST.get('license_number')
 
+        # Validation
+        if not all([u, p, e, exp, spec, license_num]):
+            messages.error(request, "Please fill in all required fields (Username, Password, Email, Experience, Specialization, License).")
+            return redirect('add_doctor')
+
         if User.objects.filter(username=u).exists():
             messages.error(request, "That username is already taken.")
             return redirect('add_doctor')
 
-        user = User.objects.create_user(username=u, email=e, password=p, role='DOCTOR')
+        try:
+            exp_int = int(exp)
+            if exp_int < 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Experience Years must be a valid positive number.")
+            return redirect('add_doctor')
 
-        DoctorProfile.objects.create(
-            user=user,
-            bio=bio,
-            experience_years=exp,
-            contact_number=phone,
-            location=loc,
-            specialization=spec,
-            license_number=license_num
-        )
-
-        messages.success(request, f"Dr. {u} was successfully added to the clinic!")
-        return redirect('admin_dashboard')
+        # Create User and Profile
+        try:
+            user = User.objects.create_user(username=u, email=e, password=p, role='DOCTOR')
+            DoctorProfile.objects.create(
+                user=user,
+                bio=bio,
+                experience_years=exp_int,
+                contact_number=phone,
+                location=loc,
+                specialization=spec,
+                license_number=license_num
+            )
+            messages.success(request, f"Dr. {u} was successfully added to the clinic!")
+            return redirect('admin_dashboard')
+        except Exception as err:
+            messages.error(request, f"An error occurred while creating the doctor: {str(err)}")
+            return redirect('add_doctor')
 
     return render(request, 'admin/add_doctor.html')
 
